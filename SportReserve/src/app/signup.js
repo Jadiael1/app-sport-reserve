@@ -20,6 +20,7 @@ import axios from "axios";
 import { useForm, Controller } from "react-hook-form";
 import api_url from "../constants/constants";
 import CpfMask from "../components/CpfMask";
+import { CustomPasswordInput } from "../components/CustomInputPassword";
 
 export default function SignUp() {
   const [isChecked, setChecked] = useState(false);
@@ -203,13 +204,11 @@ export default function SignUp() {
               control={control}
               name="password"
               render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
+                <CustomPasswordInput
                   placeholder="Senha"
-                  style={styles.input}
-                  secureTextEntry
+                  value={value}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value}
                 />
               )}
             />
@@ -229,7 +228,7 @@ export default function SignUp() {
               control={control}
               name="confirmPassword"
               render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
+                <CustomPasswordInput
                   placeholder="Confirme a senha"
                   style={styles.input}
                   secureTextEntry

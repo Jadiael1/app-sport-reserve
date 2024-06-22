@@ -7,23 +7,28 @@ import {
   Pressable,
   ScrollView,
   KeyboardAvoidingView,
+  ActivityIndicator,
   Platform,
   Vibration,
   SafeAreaView,
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, useNavigation } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { Controller, useForm } from "react-hook-form";
 import { api_url } from "../constants/constants";
+import { CustomPasswordInput } from "../components/CustomInputPassword";
 
 export default function Login() {
+  const navigation = useNavigation();
   const [loginError, setLoginError] = useState("");
+  const [loadingLogin, setLoadingLogin] = useState(false);
   const {
     control,
     handleSubmit,
     formState: { errors },
     setError,
+    reset,
   } = useForm({
     defaultValues: {
       email: "",
@@ -34,12 +39,16 @@ export default function Login() {
   const handleLogin = async ({ email, password }) => {
     console.log("Tentando fazer o login:", email, password);
 
+    // Set loading true
+    setLoadingLogin(true);
+
     if (!isValidEmail(email)) {
       setError("email", {
         type: "manual",
         message: "Por favor, insira um e-mail válido",
       });
       Vibration.vibrate(400);
+      setLoadingLogin(false); // Set loading false
       return;
     }
 
@@ -49,6 +58,7 @@ export default function Login() {
         message: "Insira a senha",
       });
       Vibration.vibrate(400);
+      setLoadingLogin(false); // Set loading false
       return;
     }
 
@@ -67,10 +77,13 @@ export default function Login() {
         setLoginError("Credenciais inválidas, verifique e tente novamente");
         Vibration.vibrate(400);
       }
+      reset();
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       setLoginError("Verifique suas credenciais, por favor!");
       Vibration.vibrate(400);
+    } finally {
+      setLoadingLogin(false);
     }
   };
 
@@ -105,13 +118,15 @@ export default function Login() {
             />
             <Controller
               control={control}
-              render={({ field }) => (
+              render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   placeholder="E-mail"
                   style={styles.input}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  {...field}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
                 />
               )}
               name="email"
@@ -137,12 +152,14 @@ export default function Login() {
             />
             <Controller
               control={control}
-              render={({ field }) => (
-                <TextInput
+              render={({ field: { onChange, onBlur, value } }) => (
+                <CustomPasswordInput
                   placeholder="Senha"
                   style={styles.input}
                   secureTextEntry
-                  {...field}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
                 />
               )}
               name="password"
@@ -169,8 +186,16 @@ export default function Login() {
             </Link>
           </View>
 
-          <Pressable style={styles.button} onPress={handleSubmit(handleLogin)}>
-            <Text style={styles.buttonText}>Entrar</Text>
+          <Pressable
+            style={[styles.button, loadingLogin && styles.buttonLoading]}
+            onPress={handleSubmit(handleLogin)}
+            disabled={loadingLogin}
+          >
+            {loadingLogin ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Entrar</Text>
+            )}
           </Pressable>
 
           <View style={styles.signupContainer}>
@@ -249,6 +274,10 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  buttonLoading: {
+    opacity: 0.7,
+    fontSize: 18,
   },
   signupContainer: {
     flexDirection: "row",
