@@ -13,18 +13,22 @@ import {
   Platform,
   Alert,
   Vibration,
+  ActivityIndicator,
 } from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { useForm, Controller } from "react-hook-form";
-import api_url from "../constants/constants";
+import { api_url } from "../constants/constants";
 import CpfMask from "../components/CpfMask";
 import { CustomPasswordInput } from "../components/CustomInputPassword";
+import { CellPhoneNumber } from "../components/CellPhoneMask";
+
+
 
 export default function SignUp() {
   const [isChecked, setChecked] = useState(false);
-
+  const [isLoading, setIsloading] = useState(false);
   const {
     control,
     handleSubmit,
@@ -37,7 +41,7 @@ export default function SignUp() {
       email: "",
       phone: "",
       password: "",
-      confirmPassword: "",
+      password_confirmation: "",
       cpf: "",
     },
   });
@@ -59,6 +63,7 @@ export default function SignUp() {
           type: "manual",
           message: "Por favor, insira um e-mail válido",
         });
+        setIsloading(false);
         Vibration.vibrate(300);
         return;
       }
@@ -69,15 +74,17 @@ export default function SignUp() {
           message:
             "A senha deve ter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais.",
         });
+        setIsloading(false);
         Vibration.vibrate(300);
         return;
       }
 
-      if (data.password !== data.confirmPassword) {
+      if (data.password !== data.password_confirmation) {
         setError("confirmPassword", {
           type: "manual",
           message: "As senhas não conferem.",
         });
+        setIsloading(false);
         Vibration.vibrate(300);
         return;
       }
@@ -86,10 +93,21 @@ export default function SignUp() {
         alert("Você precisa concordar com os Termos e Condições.");
         return;
       }
-      const response = await axios.post(`${api_url}/api/register`, data);
-      console.log("Cadastro realizado com sucesso:", response);
+      data.cpf = data.cpf.replace(/\.|-/gm, "");
+      console.log("data", data);
+      //data.phone = data.phone.replace(/\D/g, "");
+      const response = await axios.post(`${api_url}api/register`, data, {
+        headers: {
+          Authorization:
+            "Bearer 20|QMVhlQEAoM8g8jeFqYzTTiulJdig1Ov9ifdo2C2rccdd1dc9",
+        },
+      });
 
-      Alert.alert("Cadastro realizado com sucesso!");
+      console.log("data", data);
+      console.log("resposta do response", response);
+      console.log("Cadastro realizado com sucesso:", data);
+
+      setIsloading(true);
       setTimeout(() => {
         navigation.navigate("/");
       }, 2000);
@@ -107,8 +125,7 @@ export default function SignUp() {
       >
         <ScrollView
           contentContainerStyle={styles.scrollViewContainer}
-          // keyboardShouldPersistTaps="handled"
-          // showsVerticalScrollIndicator={false}
+        
           contentInsetAdjustmentBehavior="automatic"
         >
           <View style={styles.logoContainer}>
@@ -155,6 +172,29 @@ export default function SignUp() {
               name="cpf"
               render={({ field: { onChange, onBlur, value } }) => (
                 <CpfMask
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {errors.cpf && (
+              <Text style={styles.errorMessage}>{errors.cpf.message}</Text>
+            )}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="logo-whatsapp"
+              size={20}
+              color="#666"
+              style={styles.icon}
+            />
+            <Controller
+              control={control}
+              name="phone"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <CellPhoneNumber
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
@@ -226,7 +266,7 @@ export default function SignUp() {
             />
             <Controller
               control={control}
-              name="confirmPassword"
+              name="password_confirmation"
               render={({ field: { onChange, onBlur, value } }) => (
                 <CustomPasswordInput
                   placeholder="Confirme a senha"
@@ -257,8 +297,16 @@ export default function SignUp() {
             </Text>
           </View>
 
-          <Pressable style={styles.button} onPress={handleSubmit(handleSignUp)}>
-            <Text style={styles.buttonText}>Cadastrar</Text>
+          <Pressable
+            style={styles.button}
+            onPress={handleSubmit(handleSignUp)}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Cadastrar</Text>
+            )}
           </Pressable>
 
           <View style={styles.signupContainer}>

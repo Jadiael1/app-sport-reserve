@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from "react";
+import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-export const CustomPasswordInput = ({ value, onChangeText, placeholder, onBlur }) => {
+export const CustomPasswordInput = ({
+  value,
+  onChangeText,
+  placeholder,
+  onBlur,
+}) => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
 
   return (
@@ -31,23 +36,18 @@ export const CustomPasswordInput = ({ value, onChangeText, placeholder, onBlur }
 
 const styles = StyleSheet.create({
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    // backgroundColor: '#fff',
-    // borderRadius: 7,
-    // padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+
     marginVertical: 10,
     width: "90%",
-    // elevation: 5,
   },
   input: {
     flex: 1,
     height: 20,
     fontSize: 16,
-    // backgroundColor: 'red'
   },
   iconContainer: {
     marginLeft: 10,
   },
 });
-

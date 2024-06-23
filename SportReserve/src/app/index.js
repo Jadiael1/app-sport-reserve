@@ -14,10 +14,10 @@ import {
 } from "react-native";
 import { Link, useNavigation } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import axios from "axios";
 import { Controller, useForm } from "react-hook-form";
 import { api_url } from "../constants/constants";
 import { CustomPasswordInput } from "../components/CustomInputPassword";
+import axios from "axios";
 
 export default function Login() {
   const navigation = useNavigation();
@@ -39,7 +39,6 @@ export default function Login() {
   const handleLogin = async ({ email, password }) => {
     console.log("Tentando fazer o login:", email, password);
 
-    // Set loading true
     setLoadingLogin(true);
 
     if (!isValidEmail(email)) {
@@ -48,7 +47,7 @@ export default function Login() {
         message: "Por favor, insira um e-mail válido",
       });
       Vibration.vibrate(400);
-      setLoadingLogin(false); // Set loading false
+      setLoadingLogin(false);
       return;
     }
 
@@ -58,26 +57,27 @@ export default function Login() {
         message: "Insira a senha",
       });
       Vibration.vibrate(400);
-      setLoadingLogin(false); // Set loading false
+      setLoadingLogin(false);
       return;
     }
 
     try {
-      const response = await axios.post(`${api_url}api/login`, {
-        email,
-        password,
-      });
-
+      const response = await axios.post(
+        `${api_url}api/login`,
+        {
+          email,
+          password,
+        },
+        {
+          headers: {
+            Authorization:
+              "Bearer 20|QMVhlQEAoM8g8jeFqYzTTiulJdig1Ov9ifdo2C2rccdd1dc9",
+          },
+        }
+      );
       console.log("Resposta do servidor:", response.data);
 
-      if (response.data.success) {
-        setLoginError("");
-        navigation.navigate("home");
-      } else {
-        setLoginError("Credenciais inválidas, verifique e tente novamente");
-        Vibration.vibrate(400);
-      }
-      reset();
+      navigation.navigate("home");
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       setLoginError("Verifique suas credenciais, por favor!");
