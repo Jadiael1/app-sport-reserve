@@ -31,7 +31,7 @@ const AgendarHorario = () => {
     setSelectedDate(date);
     setLoadingSlots(true);
     try {
-      const response = await axios.get(`${api_url}/api/users/${date}`);
+      const response = await axios.get(`${api_url}/auth/users/${date}`);
       setAvailableTimeSlots(response.data);
     } catch (error) {
       setError("Erro ao buscar horários disponíveis");

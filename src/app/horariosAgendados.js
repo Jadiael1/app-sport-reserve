@@ -25,7 +25,7 @@ const ScheduledTimes = () => {
   useEffect(() => {
     const fetchScheduledTimes = async () => {
       try {
-        const response = await axios.get(`${api_url}/api/users`);
+        const response = await axios.get(`${api_url}/auth/users`);
         setScheduledTimes(response.data);
       } catch (error) {
         console.error("Erro ao buscar horários agendados:", error);

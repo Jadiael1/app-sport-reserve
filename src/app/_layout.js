@@ -40,11 +40,6 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <QueryClientProvider client={queryClient}>
-        <NavigationContainer
-          ref={navigationRef}
-          independent={true}
-          onReady={() => setNavigationReady(true)}
-        >
           <Stack initialRouteName={initialRoute}>
             <Stack.Screen options={{ headerShown: false }} name="index" />
             <Stack.Screen options={{ headerShown: false }} name="signup" />
@@ -58,7 +53,6 @@ export default function RootLayout() {
               name="agendarHorario"
             />
           </Stack>
-        </NavigationContainer>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

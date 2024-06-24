@@ -63,7 +63,7 @@ export default function Login() {
     }
 
     try {
-      const response = await axios.post(`${api_url}api/login`, {
+      const response = await axios.post(`${api_url}/auth/signin`, {
         email,
         password,
       });
@@ -91,7 +91,7 @@ export default function Login() {
 
   // const validateToken = async (token) => {
   //   try {
-  //     const response = await axios.post(`${api_url}api/user`, {
+  //     const response = await axios.post(`${api_url}/auth/user`, {
   //       token,
   //     });
   //     console.log("resposta do token", response);

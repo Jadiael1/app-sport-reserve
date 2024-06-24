@@ -9,7 +9,7 @@ const useAuth = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.post(`${api_url}/api/user`);
+        const response = await axios.post(`${api_url}/auth/user`);
 
         const isAuthenticated = response.data.isAuthenticated;
         setIsAuthenticated(isAuthenticated);

@@ -94,7 +94,7 @@ export default function SignUp() {
       data.cpf = data.cpf.replace(/\.|-/gm, "");
       console.log("data", data);
       //data.phone = data.phone.replace(/\D/g, "");
-      const response = await axios.post(`${api_url}api/register`, data, {
+      const response = await axios.post(`${api_url}/auth/signup`, data, {
         // headers: {
         //   Authorization:
         //     "Bearer 20|QMVhlQEAoM8g8jeFqYzTTiulJdig1Ov9ifdo2C2rccdd1dc9",
