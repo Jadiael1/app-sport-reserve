@@ -107,7 +107,7 @@ export default function SignUp() {
 
       setIsloading(true);
       setTimeout(() => {
-        // navigation.navigate("/");
+        navigation.navigate("/");
       }, 2000);
     } catch (error) {
       console.error("Erro ao cadastrar usuário:", error);
