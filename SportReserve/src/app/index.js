@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import { Controller, useForm } from "react-hook-form";
 import { api_url } from "../constants/constants";
 import { CustomPasswordInput } from "../components/CustomInputPassword";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Login() {
   const navigation = useNavigation();
@@ -62,19 +63,12 @@ export default function Login() {
     }
 
     try {
-      const response = await axios.post(
-        `${api_url}api/login`,
-        {
-          email,
-          password,
-        },
-        {
-          headers: {
-            Authorization:
-              "Bearer 20|QMVhlQEAoM8g8jeFqYzTTiulJdig1Ov9ifdo2C2rccdd1dc9",
-          },
-        }
-      );
+      const response = await axios.post(`${api_url}api/login`, {
+        email,
+        password,
+      });
+      AsyncStorage.setItem("TOKEN", response.data.token);
+      console.log("resposta do token", response.data.token);
       console.log("Resposta do servidor:", response.data);
 
       navigation.navigate("home");
@@ -94,6 +88,24 @@ export default function Login() {
   const isValidPassword = (password) => {
     return password.length > 0;
   };
+
+  // const validateToken = async (token) => {
+  //   try {
+  //     const response = await axios.post(`${api_url}api/user`, {
+  //       token,
+  //     });
+  //     console.log("resposta do token", response);
+  //     return response.data.valid;
+  //   } catch (error) {
+  //     console.error("Erro ao validar token:", error);
+  //     return false;
+  //   }
+  // };
+  useEffect(() => {
+    AsyncStorage.getItem("TOKEN").then((token) => {
+      console.log("token:", token);
+    });
+  });
 
   return (
     <SafeAreaView style={styles.container}>

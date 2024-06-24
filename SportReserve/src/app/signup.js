@@ -24,8 +24,6 @@ import CpfMask from "../components/CpfMask";
 import { CustomPasswordInput } from "../components/CustomInputPassword";
 import { CellPhoneNumber } from "../components/CellPhoneMask";
 
-
-
 export default function SignUp() {
   const [isChecked, setChecked] = useState(false);
   const [isLoading, setIsloading] = useState(false);
@@ -97,10 +95,10 @@ export default function SignUp() {
       console.log("data", data);
       //data.phone = data.phone.replace(/\D/g, "");
       const response = await axios.post(`${api_url}api/register`, data, {
-        headers: {
-          Authorization:
-            "Bearer 20|QMVhlQEAoM8g8jeFqYzTTiulJdig1Ov9ifdo2C2rccdd1dc9",
-        },
+        // headers: {
+        //   Authorization:
+        //     "Bearer 20|QMVhlQEAoM8g8jeFqYzTTiulJdig1Ov9ifdo2C2rccdd1dc9",
+        // },
       });
 
       console.log("data", data);
@@ -125,7 +123,6 @@ export default function SignUp() {
       >
         <ScrollView
           contentContainerStyle={styles.scrollViewContainer}
-        
           contentInsetAdjustmentBehavior="automatic"
         >
           <View style={styles.logoContainer}>
