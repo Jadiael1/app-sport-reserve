@@ -24,14 +24,59 @@ Certifique-se de ter as seguintes ferramentas instaladas em seu ambiente de dese
 
    ```bash
    git clone https://github.com/Jadiael1/app-sport-reserve.git
+   cd app-sport-reserve
+   ```
 
 2. **Instalar dependências:**
 
-```
-npm install
+   ```bash
+   npm install
+
+   # ou
+
+   yarn install
+   ```
+
+## Configuração
+
+1. **Configurar variáveis de ambiente:**
+
+   Renomeie o arquivo `.env.example` para `.env` e configure as variáveis de ambiente necessárias, como URLs da API e chaves de acesso.
+
+## Executando o Aplicativo
+
+Para iniciar o aplicativo em um ambiente de desenvolvimento, utilize o seguinte comando:
+
+```bash
+npm start
 
 # ou
 
-yarn install
+yarn start
 ```
-## Configuração
+
+Isso iniciará o servidor de desenvolvimento do Expo. Use o aplicativo Expo Go no seu dispositivo móvel ou um emulador/simulador para visualizar o aplicativo.
+
+## Estrutura do Projeto
+
+- `src/`
+
+  - `components/`: Componentes reutilizáveis
+  - `constants/`: Constantes e configurações do projeto
+  - `screens/`: Telas principais do aplicativo
+  - `services/`: Lógica de serviço, como autenticação e gerenciamento de API
+  - `utils/`: Funções utilitárias auxiliares
+  - `App.js`: Ponto de entrada do aplicativo
+
+## Contribuição
+
+Contribuições são bem-vindas! Para sugerir melhorias, por favor abra uma issue descrevendo sua sugestão ou envie um pull request com suas modificações.
+
+## Autores
+
+- Nome do Autor 1 - [@jadiael](https://github.com/Jadiael1)
+- Nome do Autor 2 - [@wilksonflor](https://github.com/Wilksonflor)
+
+## Licença
+
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](./LICENSE) para mais detalhes.
