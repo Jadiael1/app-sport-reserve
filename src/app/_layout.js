@@ -26,7 +26,6 @@ export default function RootLayout() {
   const [isNavigationReady, setNavigationReady] = useState(false);
   const [initialRoute, setInitialRoute] = useState(null);
 
-  
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
       await SplashScreen.hideAsync();
@@ -34,25 +33,35 @@ export default function RootLayout() {
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return (
+      <ActivityIndicator
+        size="large"
+        color="#0000ff"
+        style={{ alignItems: "center", justifyContent: "center" }}
+      />
+    );
   }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <QueryClientProvider client={queryClient}>
-          <Stack initialRouteName={initialRoute}>
-            <Stack.Screen options={{ headerShown: false }} name="index" />
-            <Stack.Screen options={{ headerShown: false }} name="signup" />
-            <Stack.Screen options={{ headerShown: false }} name="home" />
-            <Stack.Screen
-              options={{ headerShown: false }}
-              name="horariosAgendados"
-            />
-            <Stack.Screen
-              options={{ headerShown: false }}
-              name="agendarHorario"
-            />
-          </Stack>
+        <Stack initialRouteName={initialRoute}>
+          <Stack.Screen options={{ headerShown: false }} name="index" />
+          <Stack.Screen options={{ headerShown: false }} name="signup" />
+          <Stack.Screen options={{ headerShown: false }} name="home" />
+          <Stack.Screen
+            options={{ headerShown: false }}
+            name="recoveryPassword"
+          />
+          <Stack.Screen
+            options={{ headerShown: false }}
+            name="horariosAgendados"
+          />
+          <Stack.Screen
+            options={{ headerShown: false }}
+            name="agendarHorario"
+          />
+        </Stack>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );
