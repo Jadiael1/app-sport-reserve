@@ -24,7 +24,7 @@ Certifique-se de ter as seguintes ferramentas instaladas em seu ambiente de dese
 
    ```bash
    git clone https://github.com/Jadiael1/app-sport-reserve.git
-   cd nome-do-repositorio
+
 2. **Instalar dependências:**
 
 ```npm install
