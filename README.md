@@ -23,7 +23,7 @@ Certifique-se de ter as seguintes ferramentas instaladas em seu ambiente de dese
 1. **Clonar o repositório:**
 
    ```bash
-   git clone [https://github.com/seu-usuario/nome-do-repositorio.git](https://github.com/Jadiael1/app-sport-reserve.git)
+   git clone https://github.com/Jadiael1/app-sport-reserve.git
    cd nome-do-repositorio
 2. **Instalar dependências:**
 
