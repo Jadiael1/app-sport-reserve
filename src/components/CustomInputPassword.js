@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
+import { View, TextInput, StyleSheet, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 export const CustomPasswordInput = ({
@@ -20,7 +20,7 @@ export const CustomPasswordInput = ({
         onChangeText={onChangeText}
         onBlur={onBlur}
       />
-      <TouchableOpacity
+      <Pressable
         onPress={() => setPasswordVisible(!isPasswordVisible)}
         style={styles.iconContainer}
       >
@@ -29,7 +29,7 @@ export const CustomPasswordInput = ({
           size={24}
           color="grey"
         />
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 };
