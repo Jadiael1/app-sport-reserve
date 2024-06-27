@@ -29,9 +29,9 @@ Certifique-se de ter as seguintes ferramentas instaladas em seu ambiente de dese
 
 ```
 npm install
-```
+
 # ou
-```
+
 yarn install
 ```
 ## Configuração
