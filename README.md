@@ -27,7 +27,8 @@ Certifique-se de ter as seguintes ferramentas instaladas em seu ambiente de dese
 
 2. **Instalar dependências:**
 
-```npm install
+```
+npm install
 # ou
 yarn install
 ```
