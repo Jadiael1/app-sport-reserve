@@ -74,8 +74,8 @@ Contribuições são bem-vindas! Para sugerir melhorias, por favor abra uma issu
 
 ## Autores
 
-- Nome do Autor 1 - [@jadiael](https://github.com/Jadiael1)
-- Nome do Autor 2 - [@wilksonflor](https://github.com/Wilksonflor)
+- [@jadiael](https://github.com/Jadiael1)
+- [@wilksonflor](https://github.com/Wilksonflor)
 
 ## Licença
 
