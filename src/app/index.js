@@ -124,7 +124,7 @@ export default function Login() {
                 <TextInput
                   placeholder="E-mail"
                   style={styles.input}
-                  keyboardType="email-address"
+                  inputMode="email-address"
                   autoCapitalize="none"
                   onBlur={onBlur}
                   onChangeText={onChange}
