@@ -67,9 +67,17 @@ export default function Login() {
         email,
         password,
       });
-      AsyncStorage.setItem("TOKEN", response.data.token);
-      console.log("resposta do token", response.data.token);
-      console.log("Resposta do servidor:", response.data);
+
+      const { token, user } = response.data.data;
+      console.log("email", email);
+      await AsyncStorage.setItem("TOKEN", token);
+      await AsyncStorage.setItem("EMAIL", user.email);
+      await AsyncStorage.setItem("EMAIL_VERIFIED_AT", user.email_verified_at);
+
+      console.log(await AsyncStorage.getItem("TOKEN"));
+
+      console.log("resposta do token", token);
+      console.log("Resposta do servidor:", user);
 
       navigation.navigate("home");
     } catch (error) {
@@ -88,24 +96,6 @@ export default function Login() {
   const isValidPassword = (password) => {
     return password.length > 0;
   };
-
-  // const validateToken = async (token) => {
-  //   try {
-  //     const response = await axios.post(`${api_url}/auth/user`, {
-  //       token,
-  //     });
-  //     console.log("resposta do token", response);
-  //     return response.data.valid;
-  //   } catch (error) {
-  //     console.error("Erro ao validar token:", error);
-  //     return false;
-  //   }
-  // };
-  useEffect(() => {
-    AsyncStorage.getItem("TOKEN").then((token) => {
-      console.log("token:", token);
-    });
-  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -193,7 +183,7 @@ export default function Login() {
           )}
 
           <View style={styles.forgotPasswordContainer}>
-            <Link href="/recuperar" style={styles.forgotPasswordText}>
+            <Link href="/recoveryPassword" style={styles.forgotPasswordText}>
               <Text>Esqueceu a senha?</Text>
             </Link>
           </View>
