@@ -4,14 +4,14 @@
     "slug": "SportReserve",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/favicon.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "scheme": "SportReserve",
     "platforms": ["ios", "android", "web"],
     "splash": {
-      "image": "./assets/ball.json",
+      // "image": "./assets/ball.json",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#E8F4F8"
     },
     "ios": {
       "supportsTablet": true,
@@ -19,13 +19,13 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#E8F4F8"
       },
       "package": "com.sportreserve"
     },
     "web": {
-      "favicon": "./assets/favicon.png",
+      "logo.png": "./assets/logo.png",
       "bundle": "metro"
     },
     "plugins": ["expo-router"]
