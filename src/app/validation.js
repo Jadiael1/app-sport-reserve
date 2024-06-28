@@ -10,6 +10,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api_url } from "../constants/constants";
 import { router } from "expo-router";
+
 export default function Validation({ token }) {
   const [isSending, setIsSending] = useState(false);
   const [message, setMessage] = useState("");
@@ -43,17 +44,18 @@ export default function Validation({ token }) {
       );
       console.log("Verificação enviada com sucesso!!!!");
       setMessage("E-mail de verificação reenviado com sucesso!");
-    } catch (error) {
-      console.error("Erro ao reenviar e-mail de verificação:", error);
-      setMessage("Falha ao reenviar e-mail de verificação.");
-    } finally {
       setTimeout(() => {
         setIsSending(false);
         router.navigate("/");
       }, 3000);
+    } catch (error) {
+      console.error("Erro ao reenviar e-mail de verificação:", error);
+      setMessage("Falha ao reenviar e-mail de verificação.");
+    } finally {
     }
   };
 
+  console.log(url);
   return (
     <View style={styles.container}>
       <Text style={styles.text}>
@@ -78,6 +80,10 @@ export default function Validation({ token }) {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#E8F4F8",
     padding: 20,
     alignItems: "center",
   },
