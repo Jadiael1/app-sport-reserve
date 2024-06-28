@@ -27,16 +27,11 @@ export default function Home() {
           },
         });
 
-        // if (!response.ok) {
-        //   router.navigate("/");
-        //   return;
-        // }
-
         const userData = await response.json();
         setUser(userData);
 
         // Verifica se o e-mail foi verificado
-        if (userData && userData.email_verified_at === null) {
+        if (userData && userData.email_verified_at !== null) {
           setEmailValid(true);
         } else {
           setEmailValid(false);
