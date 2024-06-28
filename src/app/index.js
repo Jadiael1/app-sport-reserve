@@ -69,15 +69,15 @@ export default function Login() {
       });
 
       const { token, user } = response.data.data;
-      console.log("email", email);
+      // console.log("email", email);
       await AsyncStorage.setItem("TOKEN", token);
       await AsyncStorage.setItem("EMAIL", user.email);
       await AsyncStorage.setItem("EMAIL_VERIFIED_AT", user.email_verified_at);
 
-      console.log(await AsyncStorage.getItem("TOKEN"));
+      // console.log(await AsyncStorage.getItem("TOKEN"));
 
-      console.log("resposta do token", token);
-      console.log("Resposta do servidor:", user);
+      // console.log("resposta do token", token);
+      // console.log("Resposta do servidor:", user);
 
       navigation.navigate("home");
     } catch (error) {
