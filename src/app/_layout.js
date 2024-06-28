@@ -7,11 +7,9 @@ import { Stack } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useFonts } from "expo-font";
-import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator } from "react-native";
-import { api_url } from "../constants/constants";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import { useCallback, useState } from "react";
+import { ActivityIndicator, StyleSheet, View, Text } from "react-native";
+import TabNavigator from "../Navigation/TabNavigation";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +23,7 @@ export default function RootLayout() {
   const navigationRef = useNavigationContainerRef();
   const [isNavigationReady, setNavigationReady] = useState(false);
   const [initialRoute, setInitialRoute] = useState(null);
+  const [isAppReady, setAppReady] = useState(false);
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
@@ -32,13 +31,17 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded && !isAppReady) {
     return (
-      <ActivityIndicator
-        size="large"
-        color="#0000ff"
-        style={{ alignItems: "center", justifyContent: "center" }}
-      />
+      <View style={styles.container}>
+        <Text style={styles.logo}>SportReserve</Text>
+        <Text>Aluguel fácil, jogo garantido</Text>
+        <ActivityIndicator
+          size="large"
+          color="#0000ff"
+          style={{ alignItems: "center", justifyContent: "center" }}
+        />
+      </View>
     );
   }
 
@@ -66,3 +69,18 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#E8F4F8",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 30,
+  },
+  logo: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#3D5A80",
+  },
+});
