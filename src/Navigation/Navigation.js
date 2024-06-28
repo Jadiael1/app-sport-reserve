@@ -1,42 +1,41 @@
-// src/navigation/TabNavigator.js
-
 import React from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons } from "@expo/vector-icons";
-import HomeScreen from "../screens/HomeScreen";
-import ProfileScreen from "../screens/ProfileScreen";
-import SettingsScreen from "../screens/SettingsScreen";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import TabNavigator from "./TabNavigator";
+import LoginScreen from "../screens/LoginScreen";
+import VerificationScreen from "../screens/VerificationScreen";
+import * as Linking from "expo-linking";
 
-const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
-const TabNavigator = () => {
-  return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
+const prefix = Linking.createURL("/");
 
-          if (route.name === "Home") {
-            iconName = focused ? "home" : "home-outline";
-          } else if (route.name === "Profile") {
-            iconName = focused ? "person" : "person-outline";
-          } else if (route.name === "Settings") {
-            iconName = focused ? "settings" : "settings-outline";
-          }
-
-          return <Ionicons name={iconName} size={size} color={color} />;
+const linking = {
+  prefixes: [prefix],
+  config: {
+    screens: {
+      Home: "home",
+      Login: "login",
+      Verification: {
+        path: "auth/email/verify",
+        parse: {
+          id: (id) => `${id}`,
+          expires: (expires) => `${expires}`,
+          signature: (signature) => `${signature}`,
         },
-      })}
-      tabBarOptions={{
-        activeTintColor: "#3D5A80",
-        inactiveTintColor: "gray",
-      }}
-    >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
-    </Tab.Navigator>
-  );
+      },
+    },
+  },
 };
 
-export default TabNavigator;
+export default function AppNavigator() {
+  return (
+    <NavigationContainer linking={linking}>
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Home" component={TabNavigator} />
+        <Stack.Screen name="Verification" component={VerificationScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
