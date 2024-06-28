@@ -49,13 +49,20 @@ export default function Validation({ token }) {
         router.navigate("/");
       }, 3000);
     } catch (error) {
+      if (
+        error.response &&
+        error.response.data.message === "Email already verified."
+      ) {
+        setMessage("O e-mail já foi verificado.");
+      } else {
+        setMessage("Falha ao reenviar e-mail de verificação.");
+      }
       console.error("Erro ao reenviar e-mail de verificação:", error);
-      setMessage("Falha ao reenviar e-mail de verificação.");
     } finally {
+      setIsSending(false);
     }
   };
 
-  console.log(url);
   return (
     <View style={styles.container}>
       <Text style={styles.text}>
