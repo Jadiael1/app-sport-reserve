@@ -2,10 +2,9 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import TabNavigator from "./TabNavigator";
-import LoginScreen from "../screens/LoginScreen";
 import VerificationScreen from "../screens/VerificationScreen";
 import * as Linking from "expo-linking";
-
+import TabNavigator from "./TabNavigation";
 const Stack = createStackNavigator();
 
 const prefix = Linking.createURL("/");
@@ -31,11 +30,7 @@ const linking = {
 export default function AppNavigator() {
   return (
     <NavigationContainer linking={linking}>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Home" component={TabNavigator} />
-        <Stack.Screen name="Verification" component={VerificationScreen} />
-      </Stack.Navigator>
+      <TabNavigator />
     </NavigationContainer>
   );
 }
