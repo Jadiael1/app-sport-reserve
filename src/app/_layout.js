@@ -1,15 +1,10 @@
 import * as SplashScreen from "expo-splash-screen";
-import {
-  NavigationContainer,
-  useNavigationContainerRef,
-} from "@react-navigation/native";
-import { Stack } from "expo-router";
+import React, { useCallback, useState } from "react";
+import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useFonts } from "expo-font";
-import { useCallback, useState } from "react";
-import { ActivityIndicator, StyleSheet, View, Text } from "react-native";
-import TabNavigator from "../Navigation/TabNavigation";
+import AppNavigator from "../Navigation/Navigation";
 
 const queryClient = new QueryClient();
 
@@ -20,27 +15,21 @@ export default function RootLayout() {
     PoppinsSemiBold: require("../../assets/fonts/Poppins-SemiBold.ttf"),
   });
 
-  const navigationRef = useNavigationContainerRef();
-  const [isNavigationReady, setNavigationReady] = useState(false);
-  const [initialRoute, setInitialRoute] = useState(null);
   const [isAppReady, setAppReady] = useState(false);
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
       await SplashScreen.hideAsync();
+      setAppReady(true);
     }
   }, [fontsLoaded]);
 
-  if (!fontsLoaded && !isAppReady) {
+  if (!fontsLoaded) {
     return (
       <View style={styles.container}>
         <Text style={styles.logo}>SportReserve</Text>
         <Text>Aluguel fácil, jogo garantido</Text>
-        <ActivityIndicator
-          size="large"
-          color="#0000ff"
-          style={{ alignItems: "center", justifyContent: "center" }}
-        />
+        <ActivityIndicator size="large" color="#0000ff" style={{ alignItems: "center", justifyContent: "center" }} />
       </View>
     );
   }
@@ -48,23 +37,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <QueryClientProvider client={queryClient}>
-        <Stack initialRouteName={initialRoute}>
-          <Stack.Screen options={{ headerShown: false }} name="index" />
-          <Stack.Screen options={{ headerShown: false }} name="signup" />
-          <Stack.Screen options={{ headerShown: false }} name="home" />
-          <Stack.Screen
-            options={{ headerShown: false }}
-            name="recoveryPassword"
-          />
-          <Stack.Screen
-            options={{ headerShown: false }}
-            name="horariosAgendados"
-          />
-          <Stack.Screen
-            options={{ headerShown: false }}
-            name="agendarHorario"
-          />
-        </Stack>
+        <AppNavigator />
       </QueryClientProvider>
     </GestureHandlerRootView>
   );
