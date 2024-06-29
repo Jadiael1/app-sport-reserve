@@ -23,7 +23,7 @@ const AgendarHorario = () => {
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      navigation.navigate("login");
+      navigation.navigate("/");
     }
   }, [isAuthenticated, loading, navigation]);
 
