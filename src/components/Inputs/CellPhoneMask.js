@@ -16,5 +16,3 @@ export const CellPhoneNumber = forwardRef((props, ref) => {
     </View>
   );
 });
-
-

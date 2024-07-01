@@ -5,15 +5,19 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
-import api_url from "../constants/constants";
-import useAuth from "../hooks/useAuth";
+import api_url from "../../constants/constants";
+import useAuth from "../../hooks/useAuth";
 
 const ScheduledTimes = () => {
   const { isAuthenticated, loading } = useAuth();
   const [scheduledTimes, setScheduledTimes] = useState([]);
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -37,6 +41,12 @@ const ScheduledTimes = () => {
     }
   }, [isAuthenticated]);
 
+  const onChangeDate = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShowDatePicker(false);
+    setDate(currentDate);
+  };
+
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
@@ -44,16 +54,30 @@ const ScheduledTimes = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Horários Agendados</Text>
+      <Pressable
+        style={styles.datePickerButton}
+        onPress={() => setShowDatePicker(true)}
+      >
+        <Text style={styles.datePickerText}>Selecionar Data</Text>
+      </Pressable>
+      {showDatePicker && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display="default"
+          onChange={onChangeDate}
+        />
+      )}
       <FlatList
-      // data={scheduledTimes}
-      // renderItem={({ item }) => (
-      //   <View style={styles.timeSlot}>
-      //     <Text style={styles.timeText}>{item.time}</Text>
-      //     <Text>{item.date}</Text>
-      //   </View>
-      // )}
-      // keyExtractor={(item) => `${item.date}-${item.time}`}
-      // contentContainerStyle={styles.timeList}
+        data={scheduledTimes}
+        renderItem={({ item }) => (
+          <View style={styles.timeSlot}>
+            <Text style={styles.timeText}>{item.time}</Text>
+            <Text>{item.date}</Text>
+          </View>
+        )}
+        keyExtractor={(item) => `${item.date}-${item.time}`}
+        contentContainerStyle={styles.timeList}
       />
     </View>
   );
@@ -71,6 +95,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#3D5A80",
     marginBottom: 20,
+  },
+  datePickerButton: {
+    backgroundColor: "#3D5A80",
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  datePickerText: {
+    color: "#fff",
+    fontSize: 16,
   },
   timeList: {
     alignItems: "center",
