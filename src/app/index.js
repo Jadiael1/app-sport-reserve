@@ -16,7 +16,7 @@ import { Link, useNavigation } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Controller, useForm } from "react-hook-form";
 import { api_url } from "../constants/constants";
-import { CustomPasswordInput } from "../components/CustomInputPassword";
+import { CustomPasswordInput } from "../components/Inputs/CustomInputPassword";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 

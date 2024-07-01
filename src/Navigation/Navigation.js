@@ -4,8 +4,10 @@ import * as Linking from "expo-linking";
 import TabNavigator from "./TabNavigation";
 import LoginScreen from "../app/index";
 import AgendarHorario from "../app/agendarHorario";
-import HorariosAgendados from "../app/horariosAgendados";
+import HorariosAgendados from "../Screens/Horarios/horariosAgendados";
+import ListaCampos from "../Screens/campos/Campos";
 
+import {Profile} from "../app/profile";
 const Stack = createStackNavigator();
 
 const prefix = Linking.createURL("/");
@@ -21,13 +23,15 @@ const linking = {
       recoveryPassword: "recoveryPassword",
       signup: "signup",
       validation: "validation",
+      listaCampos: "listaCampos",
+      profile: "profile",
     },
   },
 };
 
 export default function AppNavigator() {
   return (
-    <Stack.Navigator initialRouteName="index">
+    <Stack.Navigator initialRouteName="login">
       <Stack.Screen
         name="index"
         component={LoginScreen}
@@ -46,6 +50,16 @@ export default function AppNavigator() {
       <Stack.Screen
         name="horariosAgendados"
         component={HorariosAgendados}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="listaCampos"
+        component={ListaCampos}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Profile"
+        component={Profile}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

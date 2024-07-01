@@ -20,9 +20,9 @@ import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { useForm, Controller } from "react-hook-form";
 import { api_url } from "../constants/constants";
-import CpfMask from "../components/CpfMask";
-import { CustomPasswordInput } from "../components/CustomInputPassword";
-import { CellPhoneNumber } from "../components/CellPhoneMask";
+import CpfMask from "../components/Inputs/CpfMask";
+import { CustomPasswordInput } from "../components/Inputs/CustomInputPassword";
+import { CellPhoneNumber } from "../components/Inputs/CellPhoneMask";
 
 export default function SignUp() {
   const [isChecked, setChecked] = useState(false);

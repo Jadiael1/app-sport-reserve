@@ -14,8 +14,9 @@ export default function Home() {
     const checkUserVerification = async () => {
       try {
         const storedToken = await AsyncStorage.getItem("TOKEN");
+
         if (!storedToken) {
-          router.navigate("/");
+          router.navigate("login");
           return;
         }
         setToken(storedToken);
@@ -36,33 +37,22 @@ export default function Home() {
         } else {
           setEmailValid(false);
         }
+      
       } catch (error) {
         console.error("Error checking user verification:", error);
+        router.navigate("/");
       }
     };
 
     checkUserVerification();
   }, []);
 
-  const logout = async () => {
-    try {
-      await AsyncStorage.removeItem("TOKEN");
-      await AsyncStorage.removeItem("EMAIL");
-      await AsyncStorage.removeItem("EMAIL_VERIFIED_AT");
-      router.navigate("/");
-    } catch (error) {
-      console.error("Error logging out:", error);
-    }
-  };
-
   return (
     <View style={styles.container}>
       {emailValid ? (
         <>
+          {/* Editar aqui para colocar o que for na Home */}
           <Text>Home</Text>
-          <Pressable onPress={logout}>
-            <Text>Sair</Text>
-          </Pressable>
         </>
       ) : (
         user && <Validation token={token} email={user.email} />
@@ -76,5 +66,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "#E8F4F8",
+  },
+  btnSair: {
+    backgroundColor: "red",
+    padding: 10,
   },
 });
