@@ -31,7 +31,7 @@ const linking = {
 
 export default function AppNavigator() {
   return (
-    <Stack.Navigator initialRouteName="login">
+    <Stack.Navigator initialRouteName="index">
       <Stack.Screen
         name="index"
         component={LoginScreen}
