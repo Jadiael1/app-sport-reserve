@@ -4,12 +4,12 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  Picker,
   Button,
   Alert,
   ActivityIndicator,
   Pressable,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import { api_url } from "../constants/constants";
 
