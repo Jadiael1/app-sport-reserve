@@ -8,14 +8,55 @@ import {
   Pressable,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import axios from "axios";
-import { useNavigation } from "@react-navigation/native";
-import api_url from "../../constants/constants";
+import Icon from "react-native-vector-icons/MaterialIcons"; // Importando ícones
+import { fetchHorarios, fetchFieldName } from "../../api/api";
+
+const getStatusDetails = (status) => {
+  switch (status) {
+    case "paid":
+      return { displayName: "Pago", color: "#28a745", icon: "check-circle" };
+    case "pending":
+      return {
+        displayName: "Pendente",
+        color: "#ffc107",
+        icon: "hourglass-empty",
+      };
+    case "canceled":
+      return { displayName: "Cancelado", color: "#dc3545", icon: "cancel" };
+    default:
+      return { displayName: status, color: "#000", icon: "info" };
+  }
+};
 
 const ScheduledTimes = () => {
   const [scheduledTimes, setScheduledTimes] = useState([]);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const loadHorarios = async () => {
+      setLoading(true);
+      try {
+        const horarios = await fetchHorarios();
+        const horariosWithFieldNames = await Promise.all(
+          horarios.map(async (horario) => {
+            const fieldName = await fetchFieldName(horario.field_id);
+            return { ...horario, fieldName };
+          })
+        );
+        setScheduledTimes(horariosWithFieldNames);
+      } catch (error) {
+        setError("Erro ao carregar os horários");
+        console.log("erro ao carregar", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHorarios();
+  }, []);
 
   const onChangeDate = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -40,17 +81,44 @@ const ScheduledTimes = () => {
           onChange={onChangeDate}
         />
       )}
-      <FlatList
-        data={scheduledTimes}
-        renderItem={({ item }) => (
-          <View style={styles.timeSlot}>
-            <Text style={styles.timeText}>{item.time}</Text>
-            <Text>{item.date}</Text>
-          </View>
-        )}
-        keyExtractor={(item) => `${item.date}-${item.time}`}
-        contentContainerStyle={styles.timeList}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : error ? (
+        <Text style={styles.error}>{error}</Text>
+      ) : (
+        <FlatList
+          data={scheduledTimes}
+          renderItem={({ item, index }) => {
+            const { displayName, color, icon } = getStatusDetails(item.status);
+            return (
+              <View style={styles.timeSlot} key={index}>
+                <Text style={styles.label}>Nome do campo</Text>
+                <Text style={styles.value}>{item.fieldName}</Text>
+                <Text style={styles.label}>Hora de início</Text>
+                <Text style={styles.value}>{item.start_time}</Text>
+                <Text style={styles.label}>Hora de término</Text>
+                <Text style={styles.value}>
+                  {item.end_time}
+                 
+                </Text>
+                <Text style={styles.label}>Valor total</Text>
+                <Text style={styles.value}>
+                {/* colocar para pegar o valor total da reserva */}
+                </Text>
+                <Text style={styles.label}>Situação</Text>
+                <View style={styles.statusContainer}>
+                  <Icon name={icon} size={20} color={color} />
+                  <Text style={[styles.value, { color: color }]}>
+                    {displayName}
+                  </Text>
+                </View>
+              </View>
+            );
+          }}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          contentContainerStyle={styles.timeList}
+        />
+      )}
     </View>
   );
 };
@@ -90,10 +158,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 5,
   },
-  timeText: {
-    fontSize: 18,
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
     color: "#3D5A80",
+  },
+  value: {
+    fontSize: 16,
+    color: "#000",
     marginBottom: 10,
+  },
+  error: {
+    color: "red",
+    marginBottom: 10,
+  },
+  statusContainer: {
+    flexDirection: "row",
+    // alignItems: "center",
   },
 });
 

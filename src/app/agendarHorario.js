@@ -3,100 +3,119 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
-  Button,
-  Alert,
   ActivityIndicator,
   Pressable,
+  Alert,
+  SafeAreaView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import DateTimePicker from "react-native-modal-datetime-picker";
 import axios from "axios";
-import { api_url } from "../constants/constants";
+import Icon from "react-native-vector-icons/MaterialIcons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
+import * as WebBrowser from "expo-web-browser";
+import { fetchFields } from "../api/api";
+
+const api_url = "https://api-sport-reserve.juvhost.com/api/v1";
 
 const AgendarHorario = () => {
+  const navigation = useNavigation();
   const [fields, setFields] = useState([]);
-  const [hours, setHours] = useState("");
   const [totalCost, setTotalCost] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [availableDates, setAvailableDates] = useState([]);
-  const [availableTimes, setAvailableTimes] = useState([]);
-  // Estados para o campo e horário
+  // campos do form
   const [selectedField, setSelectedField] = useState(undefined);
   const [selectedDate, setSelectedDate] = useState(undefined);
-  const [selectedEndTime, setSelectedEndTime] = useState(undefined);
   const [selectedStartTime, setSelectedStartTime] = useState(undefined);
+  const [selectedEndTime, setSelectedEndTime] = useState(undefined);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const availableStartTimes = [
+    "Selecione",
+    "18:00",
+    "19:00",
+    "20:00",
+    "21:00",
+    "22:00",
+    "23:00",
+  ];
+  const availableEndTimes = [
+    "Selecione",
+    "19:00",
+    "20:00",
+    "21:00",
+    "22:00",
+    "23:00",
+    "00:00",
+  ];
 
   useEffect(() => {
-    fetchFields();
+    const fetchInitialData = async () => {
+      setLoading(true);
+      try {
+        const fetchedFields = await fetchFields();
+        setFields(fetchedFields);
+      } catch (error) {
+        setError("Não foi possível buscar os campos.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
   }, []);
 
-  const fetchFields = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(`${api_url}/fields`);
-      if (response.data.status === "success") {
-        setFields(response.data.data.data);
-      } else {
-        Alert.alert("Erro", "Não foi possível buscar os campos.");
-      }
-    } catch (error) {
-      console.error("Erro ao buscar campos:", error);
-      Alert.alert("Erro", "Não foi possível buscar os campos.");
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (selectedField && selectedStartTime && selectedEndTime) {
+      const start = new Date(`1970-01-01T${selectedStartTime}:00`);
+      const end = new Date(`1970-01-01T${selectedEndTime}:00`);
+      const hoursDiff = (end - start) / 1000 / 3600;
+      const cost = selectedField.hourly_rate * hoursDiff;
+      setTotalCost(cost);
     }
-  };
+  }, [selectedField, selectedStartTime, selectedEndTime]);
 
   const handleFieldChange = (fieldId) => {
     const field = fields.find((field) => field.id === fieldId);
     setSelectedField(field);
-    fetchAvailableDates(fieldId);
-  };
-
-  const fetchAvailableDates = async (fieldId) => {
-    try {
-      const response = await axios.get(`${api_url}/fields/${fieldId}/dates`);
-      if (response.data.status === "success") {
-        setAvailableDates(response.data.data);
-      } else {
-        Alert.alert("Erro", "Não foi possível buscar os horários disponíveis.");
-      }
-    } catch (error) {
-      console.error("Erro ao buscar horários disponíveis:", error);
-      Alert.alert("Erro", "Não foi possível buscar os horários disponíveis.");
-    }
   };
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    fetchAvailableTimes(selectedField.id, date);
+    setShowDatePicker(false);
   };
 
-  const fetchAvailableTimes = async (fieldId, date) => {
+  const resetForm = () => {
+    setSelectedField(undefined);
+    setSelectedDate(undefined);
+    setSelectedStartTime(undefined);
+    setSelectedEndTime(undefined);
+    setTotalCost(0);
+  };
+
+  const SwitchPagamentos = async (reserveId) => {
     try {
-      const response = await axios.get(
-        `${api_url}/fields/${fieldId}/dates/${date}/times`
+      const token = await AsyncStorage.getItem("TOKEN");
+      const response = await axios.post(
+        `${api_url}/payments/reservations/${reserveId}/pay`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-      if (response.data.status === "success") {
-        setAvailableTimes(response.data.data);
-      } else {
-        Alert.alert("Erro", "Não foi possível buscar os horários disponíveis.");
-      }
+      const paymentUrl = response.data.data.url;
+      console.log(paymentUrl);
+      WebBrowser.openBrowserAsync(paymentUrl);
     } catch (error) {
-      console.error("Erro ao buscar horários disponíveis:", error);
-      Alert.alert("Erro", "Não foi possível buscar os horários disponíveis.");
-    }
-  };
-
-  const handleHoursChange = (value) => {
-    setHours(value);
-  };
-
-  const calculateTotalCost = () => {
-    if (selectedField && hours) {
-      const cost = selectedField.hourly_rate * parseFloat(hours);
-      setTotalCost(cost);
+      console.log("Erro ao redirecionar para pagamento:", error);
+      Alert.alert(
+        "Erro",
+        "Não foi possível redirecionar para a página de pagamento."
+      );
     }
   };
 
@@ -105,26 +124,64 @@ const AgendarHorario = () => {
       !selectedField ||
       !selectedDate ||
       !selectedStartTime ||
-      !selectedEndTime ||
-      !hours
+      !selectedEndTime
     ) {
       Alert.alert("Erro", "Preencha todos os campos para agendar.");
       return;
     }
-    calculateTotalCost();
-    // Implementar lógica para agendar horário
+
+    const start = new Date(`1970-01-01T${selectedStartTime}:00`);
+    const end = new Date(`1970-01-01T${selectedEndTime}:00`);
+    const hoursDiff = (end - start) / 1000 / 3600;
+    const cost = selectedField.hourly_rate * hoursDiff;
+    setTotalCost(cost);
+
+    if (hoursDiff <= 0) {
+      Alert.alert(
+        "Erro",
+        "O horário de término deve ser após o horário de início."
+      );
+      return;
+    }
+
     try {
-      const response = await axios.post(`${api_url}/reservations`, {
-        field_id: selectedField.id,
-        date: selectedDate,
-        start_time: selectedStartTime,
-        end_time: selectedEndTime,
-        hours: parseFloat(hours),
-      });
+      const token = await AsyncStorage.getItem("TOKEN");
+      const response = await axios.post(
+        `${api_url}/reservations`,
+        {
+          field_id: selectedField.id,
+          start_time: `${
+            selectedDate.toISOString().split("T")[0]
+          }T${selectedStartTime}:00`,
+          end_time: `${
+            selectedDate.toISOString().split("T")[0]
+          }T${selectedEndTime}:00`,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const reservationId = response.data.data.id;
       console.log("Reserva feita:", response.data);
+
       Alert.alert(
         "Sucesso",
-        `Horário agendado com sucesso! Total: R$ ${totalCost.toFixed(2)}`
+        `Horário agendado com sucesso! Total: R$ ${totalCost.toFixed(2)}`,
+        [
+          {
+            text: "Pagamento",
+            onPress: () => {
+              setLoading(true);
+              resetForm();
+              setTimeout(() => {
+                SwitchPagamentos(reservationId);
+              }, 2000);
+            },
+          },
+        ]
       );
     } catch (error) {
       console.error("Erro ao agendar horário:", error);
@@ -133,13 +190,12 @@ const AgendarHorario = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Agendar Horário</Text>
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <View style={styles.form}>
-          {error && <Text style={styles.error}>{error}</Text>}
           <Text style={styles.label}>Selecione o Campo:</Text>
           <Picker
             selectedValue={selectedField?.id}
@@ -151,22 +207,31 @@ const AgendarHorario = () => {
             ))}
           </Picker>
           <Text style={styles.label}>Selecione a Data:</Text>
-          <Picker
-            selectedValue={selectedDate}
-            onValueChange={(itemValue) => handleDateChange(itemValue)}
-            style={styles.picker}
+          <Pressable
+            onPress={() => setShowDatePicker(true)}
+            style={styles.datePickerButton}
           >
-            {availableDates.map((date) => (
-              <Picker.Item key={date} label={date} value={date} />
-            ))}
-          </Picker>
+            <Icon name="calendar-today" size={24} color="#3D5A80" />
+            <Text style={styles.datePickerButtonText}>
+              {selectedDate
+                ? selectedDate.toLocaleDateString()
+                : "Selecione a Data"}
+            </Text>
+          </Pressable>
+          <DateTimePicker
+            isVisible={showDatePicker}
+            mode="date"
+            display="calendar"
+            onConfirm={handleDateChange}
+            onCancel={() => setShowDatePicker(false)}
+          />
           <Text style={styles.label}>Selecione o Horário de Início:</Text>
           <Picker
             selectedValue={selectedStartTime}
             onValueChange={(itemValue) => setSelectedStartTime(itemValue)}
             style={styles.picker}
           >
-            {availableTimes.map((time) => (
+            {availableStartTimes.map((time) => (
               <Picker.Item key={time} label={time} value={time} />
             ))}
           </Picker>
@@ -176,20 +241,28 @@ const AgendarHorario = () => {
             onValueChange={(itemValue) => setSelectedEndTime(itemValue)}
             style={styles.picker}
           >
-            {availableTimes.map((time) => (
+            {availableEndTimes.map((time) => (
               <Picker.Item key={time} label={time} value={time} />
             ))}
           </Picker>
-
           <Text style={styles.label}>
-            Custo Total: R$ {totalCost.toFixed(2)}
+            Custo Total:{" "}
+            <Text
+              style={{
+                fontWeight: "bold",
+                color: "#000",
+                textDecorationLine: "underline",
+              }}
+            >
+              R$ {totalCost.toFixed(2)}
+            </Text>
           </Text>
           <Pressable onPress={handleSchedule} style={styles.buttonAgendar}>
             <Text style={styles.txtBtnAgendar}>Agendar</Text>
           </Pressable>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -198,6 +271,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#E8F4F8",
     alignItems: "center",
+    justifyContent: "center",
     paddingTop: 30,
     paddingHorizontal: 20,
   },
@@ -218,27 +292,18 @@ const styles = StyleSheet.create({
   },
   picker: {
     backgroundColor: "#fff",
-    borderRadius: 7,
+    borderRadius: 20,
     marginBottom: 20,
-  },
-  input: {
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 7,
-    marginBottom: 20,
-    fontSize: 18,
   },
   error: {
     color: "red",
     marginBottom: 10,
   },
   buttonAgendar: {
-    // width: "50%",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#3D5A90",
     paddingVertical: 15,
-    // paddingHorizontal: 80,
     borderRadius: 7,
     marginVertical: 20,
     elevation: 5,
@@ -246,6 +311,19 @@ const styles = StyleSheet.create({
   txtBtnAgendar: {
     color: "#fff",
     textAlign: "center",
+  },
+  datePickerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 7,
+    marginBottom: 20,
+  },
+  datePickerButtonText: {
+    color: "#3D5A80",
+    fontSize: 16,
+    marginLeft: 10,
   },
 });
 
