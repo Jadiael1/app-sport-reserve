@@ -16,7 +16,7 @@ export default function Home() {
         const storedToken = await AsyncStorage.getItem("TOKEN");
 
         if (!storedToken) {
-          router.navigate("login");
+          router.navigate("index");
           return;
         }
         setToken(storedToken);
@@ -40,7 +40,7 @@ export default function Home() {
       
       } catch (error) {
         console.error("Error checking user verification:", error);
-        router.navigate("/");
+        router.navigate("index");
       }
     };
 
