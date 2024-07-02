@@ -11,45 +11,17 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
 import api_url from "../../constants/constants";
-import useAuth from "../../hooks/useAuth";
 
 const ScheduledTimes = () => {
-  const { isAuthenticated, loading } = useAuth();
   const [scheduledTimes, setScheduledTimes] = useState([]);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const navigation = useNavigation();
-
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      navigation.navigate("/");
-    }
-  }, [isAuthenticated, loading, navigation]);
-
-  useEffect(() => {
-    const fetchScheduledTimes = async () => {
-      try {
-        const response = await axios.get(`${api_url}/auth/users`);
-        setScheduledTimes(response.data);
-      } catch (error) {
-        console.error("Erro ao buscar horários agendados:", error);
-      }
-    };
-
-    if (isAuthenticated) {
-      fetchScheduledTimes();
-    }
-  }, [isAuthenticated]);
 
   const onChangeDate = (event, selectedDate) => {
     const currentDate = selectedDate || date;
     setShowDatePicker(false);
     setDate(currentDate);
   };
-
-  if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
-  }
 
   return (
     <View style={styles.container}>
