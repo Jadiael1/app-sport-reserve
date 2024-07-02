@@ -249,6 +249,7 @@ const styles = StyleSheet.create({
   addButton: {
     backgroundColor: "#3D5A80",
     padding: 10,
+    width: 150,
     borderRadius: 8,
   },
 
@@ -283,7 +284,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   descriptionItens: {
-    color: "red",
+    color: "#3D5A80",
   },
   iconContainer: {
     flexDirection: "column",
