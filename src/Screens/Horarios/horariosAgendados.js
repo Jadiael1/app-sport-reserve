@@ -7,9 +7,11 @@ import {
   ActivityIndicator,
   Pressable,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import Icon from "react-native-vector-icons/MaterialIcons"; // Importando ícones
 import { fetchHorarios, fetchFieldName } from "../../api/api";
+import { format } from "date-fns";
+
+import DateTimePicker from "@react-native-community/datetimepicker";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 const getStatusDetails = (status) => {
   switch (status) {
@@ -90,20 +92,27 @@ const ScheduledTimes = () => {
           data={scheduledTimes}
           renderItem={({ item, index }) => {
             const { displayName, color, icon } = getStatusDetails(item.status);
+            const totalValue = parseFloat(item.total_value);
+
             return (
               <View style={styles.timeSlot} key={index}>
                 <Text style={styles.label}>Nome do campo</Text>
                 <Text style={styles.value}>{item.fieldName}</Text>
+                <Text style={styles.label}>Data</Text>
+                <Text style={styles.value}>
+                  {format(new Date(item.start_time), "dd/MM/yyyy")}
+                </Text>
                 <Text style={styles.label}>Hora de início</Text>
-                <Text style={styles.value}>{item.start_time}</Text>
+                <Text style={styles.value}>
+                  {format(new Date(item.start_time), "HH:mm")}
+                </Text>
                 <Text style={styles.label}>Hora de término</Text>
                 <Text style={styles.value}>
-                  {item.end_time}
-                 
+                  {format(new Date(item.end_time), "HH:mm")}
                 </Text>
                 <Text style={styles.label}>Valor total</Text>
                 <Text style={styles.value}>
-                {/* colocar para pegar o valor total da reserva */}
+                  {isNaN(totalValue) ? "N/A" : `R$ ${totalValue.toFixed(2)}`}
                 </Text>
                 <Text style={styles.label}>Situação</Text>
                 <View style={styles.statusContainer}>
@@ -174,7 +183,6 @@ const styles = StyleSheet.create({
   },
   statusContainer: {
     flexDirection: "row",
-    // alignItems: "center",
   },
 });
 
