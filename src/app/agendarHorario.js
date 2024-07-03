@@ -1,3 +1,4 @@
+import * as WebBrowser from "expo-web-browser";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -9,15 +10,13 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import DateTimePicker from "react-native-modal-datetime-picker";
+import { useNavigation } from "@react-navigation/native";
+import { fetchFields } from "../api/api";
+import { api_url } from "../constants/constants";
 import axios from "axios";
+import DateTimePicker from "react-native-modal-datetime-picker";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
-import * as WebBrowser from "expo-web-browser";
-import { fetchFields } from "../api/api";
-
-const api_url = "https://api-sport-reserve.juvhost.com/api/v1";
 
 const AgendarHorario = () => {
   const navigation = useNavigation();
@@ -31,6 +30,8 @@ const AgendarHorario = () => {
   const [selectedStartTime, setSelectedStartTime] = useState(undefined);
   const [selectedEndTime, setSelectedEndTime] = useState(undefined);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showPaymentCountdown, setShowPaymentCountdown] = useState(false);
+  const [countdown, setCountdown] = useState(2); // Contador de 2 segundos
 
   const availableStartTimes = [
     "Selecione",
@@ -39,7 +40,6 @@ const AgendarHorario = () => {
     "20:00",
     "21:00",
     "22:00",
-    "23:00",
   ];
   const availableEndTimes = [
     "Selecione",
@@ -48,7 +48,6 @@ const AgendarHorario = () => {
     "21:00",
     "22:00",
     "23:00",
-    "00:00",
   ];
 
   useEffect(() => {
@@ -69,13 +68,22 @@ const AgendarHorario = () => {
 
   useEffect(() => {
     if (selectedField && selectedStartTime && selectedEndTime) {
-      const start = new Date(`1970-01-01T${selectedStartTime}:00`);
-      const end = new Date(`1970-01-01T${selectedEndTime}:00`);
-      const hoursDiff = (end - start) / 1000 / 3600;
-      const cost = selectedField.hourly_rate * hoursDiff;
-      setTotalCost(cost);
+      const totalCost = calculateTotalCost(
+        selectedField.hourly_rate,
+        selectedStartTime,
+        selectedEndTime
+      );
+      setTotalCost(totalCost);
     }
   }, [selectedField, selectedStartTime, selectedEndTime]);
+
+  const calculateTotalCost = (hourlyRate, startTime, endTime) => {
+    const start = new Date(`1970-01-01T${startTime}:00`);
+    const end = new Date(`1970-01-01T${endTime}:00`);
+    const hoursDiff = (end - start) / 1000 / 3600;
+    const cost = hourlyRate * hoursDiff;
+    return cost;
+  };
 
   const handleFieldChange = (fieldId) => {
     const field = fields.find((field) => field.id === fieldId);
@@ -167,22 +175,19 @@ const AgendarHorario = () => {
       const reservationId = response.data.data.id;
       console.log("Reserva feita:", response.data);
 
-      Alert.alert(
-        "Sucesso",
-        `Horário agendado com sucesso! Total: R$ ${totalCost.toFixed(2)}`,
-        [
-          {
-            text: "Pagamento",
-            onPress: () => {
-              setLoading(true);
-              resetForm();
-              setTimeout(() => {
-                SwitchPagamentos(reservationId);
-              }, 2000);
-            },
-          },
-        ]
-      );
+      setShowPaymentCountdown(true);
+
+      const interval = setInterval(() => {
+        setCountdown((prevCount) => prevCount - 1);
+      }, 1000);
+
+      setTimeout(async () => {
+        clearInterval(interval);
+        await SwitchPagamentos(reservationId);
+        setLoading(false);
+        setShowPaymentCountdown(false);
+        resetForm();
+      }, 2000);
     } catch (error) {
       console.error("Erro ao agendar horário:", error);
       Alert.alert("Erro", "Não foi possível agendar o horário.");
@@ -260,6 +265,11 @@ const AgendarHorario = () => {
           <Pressable onPress={handleSchedule} style={styles.buttonAgendar}>
             <Text style={styles.txtBtnAgendar}>Agendar</Text>
           </Pressable>
+          {showPaymentCountdown && (
+            <Text style={styles.countdown}>
+              Redirecionando para pagamento em {countdown} segundos...
+            </Text>
+          )}
         </View>
       )}
     </SafeAreaView>
@@ -324,6 +334,11 @@ const styles = StyleSheet.create({
     color: "#3D5A80",
     fontSize: 16,
     marginLeft: 10,
+  },
+  countdown: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#3D5A80",
   },
 });
 
