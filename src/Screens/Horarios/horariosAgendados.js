@@ -9,8 +9,6 @@ import {
 } from "react-native";
 import { fetchHorarios, fetchFieldName } from "../../api/api";
 import { format } from "date-fns";
-
-import DateTimePicker from "@react-native-community/datetimepicker";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
 const getStatusDetails = (status) => {
@@ -32,8 +30,6 @@ const getStatusDetails = (status) => {
 
 const ScheduledTimes = () => {
   const [scheduledTimes, setScheduledTimes] = useState([]);
-  const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -42,13 +38,7 @@ const ScheduledTimes = () => {
       setLoading(true);
       try {
         const horarios = await fetchHorarios();
-        const horariosWithFieldNames = await Promise.all(
-          horarios.map(async (horario) => {
-            const fieldName = await fetchFieldName(horario.field_id);
-            return { ...horario, fieldName };
-          })
-        );
-        setScheduledTimes(horariosWithFieldNames);
+        setScheduledTimes(horarios);
       } catch (error) {
         setError("Erro ao carregar os horários");
         console.log("erro ao carregar", error);
@@ -60,33 +50,16 @@ const ScheduledTimes = () => {
     loadHorarios();
   }, []);
 
-  const onChangeDate = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setShowDatePicker(false);
-    setDate(currentDate);
-  };
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Horários Agendados</Text>
-      <Pressable
-        style={styles.datePickerButton}
-        onPress={() => setShowDatePicker(true)}
-      >
-        <Text style={styles.datePickerText}>Selecionar Data</Text>
-      </Pressable>
-      {showDatePicker && (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display="default"
-          onChange={onChangeDate}
-        />
-      )}
+
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
+      ) : scheduledTimes === 0 ? (
+        <Text>Nenhum horário agendado</Text>
       ) : (
         <FlatList
           data={scheduledTimes}

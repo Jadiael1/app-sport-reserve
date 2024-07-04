@@ -25,9 +25,9 @@ export const fetchHorarios = async () => {
         Authorization: `Bearer ${token}`,
       },
     });
-
+    console.log('resposta', response.data)
     if (response.data.status === "success") {
-      console.log("resposta", response.data.data.data);
+      // console.log("resposta", response.data.data.data);
       return response.data.data.data;
     } else {
       throw new Error("Erro ao buscar os agendamentos");
@@ -61,11 +61,35 @@ export const SwitchPagamentos = async (reserveId) => {
     );
     const paymentUrl = response.data.data.url;
     WebBrowser.openBrowserAsync(paymentUrl);
+
+    await notifyPayment(response.data.data.id, "paid");
+    console.log("pagamento", notifyPayment);
   } catch (error) {
     console.log("Erro ao redirecionar para pagamento:", error);
     Alert.alert(
       "Erro",
       "Não foi possível redirecionar para a página de pagamento."
     );
+  }
+};
+
+// Confirmação do pagamento
+export const notifyPayment = async (paymentId, status) => {
+  try {
+    const token = await AsyncStorage.getItem("TOKEN");
+    const response = await axios.post(
+      `${api_url}/payments/notify`,
+      { paymentId, status },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log("Notificação de pagamento enviada com sucesso:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao enviar notificação de pagamento:", error);
+    throw error;
   }
 };
