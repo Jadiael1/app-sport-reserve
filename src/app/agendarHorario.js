@@ -137,7 +137,7 @@ const AgendarHorario = () => {
       Alert.alert("Erro", "Preencha todos os campos para agendar.");
       return;
     }
-
+    // Horas
     const start = new Date(`1970-01-01T${selectedStartTime}:00`);
     const end = new Date(`1970-01-01T${selectedEndTime}:00`);
     const hoursDiff = (end - start) / 1000 / 3600;

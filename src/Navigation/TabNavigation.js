@@ -1,19 +1,32 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   Ionicons,
   AntDesign,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
+import { Profile } from "../app/profile";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Home from "../app/home";
+import AdminHome from "../Screens/Home/HomeAdmin";
 import AgendarHorario from "../app/agendarHorario";
 import HorariosAgendados from "../Screens/Horarios/horariosAgendados";
-import { Profile } from "../app/profile";
 import ListaCampos from "../Screens/campos/Campos";
 
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const adminStatus = await AsyncStorage.getItem("IS_ADMIN");
+      setIsAdmin(JSON.parse(adminStatus));
+    };
+
+    checkAdmin();
+  }, []);
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -27,7 +40,7 @@ export default function TabNavigator() {
     >
       <Tab.Screen
         name="Home"
-        component={Home}
+        component={isAdmin ? AdminHome : Home}
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size, focused }) => (
@@ -53,34 +66,53 @@ export default function TabNavigator() {
           ),
         }}
       />
-      <Tab.Screen
-        name="AgendarHorario"
-        component={AgendarHorario}
-        options={{
-          headerShown: false,
-          tabBarIcon: ({ color, size, focused }) => (
-            <AntDesign
-              name={focused ? "pluscircle" : "pluscircleo"}
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="ListaCampos"
-        component={ListaCampos}
-        options={{
-          headerShown: false,
-          tabBarIcon: ({ color, size, focused }) => (
-            <MaterialCommunityIcons
-              name="soccer-field"
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-      />
+      {isAdmin ? (
+        <>
+          <Tab.Screen
+            name="AgendarHorario"
+            component={AgendarHorario}
+            options={{
+              headerShown: false,
+              tabBarIcon: ({ color, size, focused }) => (
+                <AntDesign
+                  name={focused ? "pluscircle" : "pluscircleo"}
+                  size={size}
+                  color={color}
+                />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="ListaCampos"
+            component={ListaCampos}
+            options={{
+              headerShown: false,
+              tabBarIcon: ({ color, size, focused }) => (
+                <MaterialCommunityIcons
+                  name="soccer-field"
+                  size={size}
+                  color={color}
+                />
+              ),
+            }}
+          />
+        </>
+      ) : (
+        <Tab.Screen
+          name="AgendarHorario"
+          component={AgendarHorario}
+          options={{
+            headerShown: false,
+            tabBarIcon: ({ color, size, focused }) => (
+              <AntDesign
+                name={focused ? "pluscircle" : "pluscircleo"}
+                size={size}
+                color={color}
+              />
+            ),
+          }}
+        />
+      )}
       <Tab.Screen
         name="Profile"
         component={Profile}

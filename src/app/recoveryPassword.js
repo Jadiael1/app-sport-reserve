@@ -3,10 +3,12 @@ import React, { useState } from "react";
 import { router } from "expo-router";
 import { TextInput } from "react-native-gesture-handler";
 import { useForm, Controller } from "react-hook-form";
-import axios from "axios";
 import { api_url } from "../constants/constants";
+import { useNavigation } from "@react-navigation/native";
+import axios from "axios";
 
 export default function RecoveryPassword() {
+  const navigation = useNavigation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const {
     control,
@@ -91,6 +93,9 @@ export default function RecoveryPassword() {
       >
         <Text style={styles.textButton}>Enviar Link</Text>
       </Pressable>
+      <Pressable onPress={() => navigation.navigate("index")}>
+        <Text>Voltar</Text>
+      </Pressable>
     </View>
   );
 }
@@ -167,7 +172,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   navigateButton: {
-
     backgroundColor: "#007BFF",
     padding: 15,
     borderRadius: 5,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
   Vibration,
   SafeAreaView,
 } from "react-native";
-import { Link, useNavigation } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { Controller, useForm } from "react-hook-form";
 import { api_url } from "../constants/constants";
@@ -38,8 +38,6 @@ export default function Login() {
   });
 
   const handleLogin = async ({ email, password }) => {
-    console.log("Tentando fazer o login:", email, password);
-
     setLoadingLogin(true);
 
     if (!isValidEmail(email)) {
@@ -69,17 +67,14 @@ export default function Login() {
       });
 
       const { token, user } = response.data.data;
-      // console.log("email", email);
+      console.log("resposta do login", response.data);
       await AsyncStorage.setItem("TOKEN", token);
       await AsyncStorage.setItem("EMAIL", user.email);
       await AsyncStorage.setItem("EMAIL_VERIFIED_AT", user.email_verified_at);
-
-      // console.log(await AsyncStorage.getItem("TOKEN"));
-
-      // console.log("resposta do token", token);
-      // console.log("Resposta do servidor:", user);
+      await AsyncStorage.setItem("IS_ADMIN", JSON.stringify(user.is_admin));
 
       navigation.navigate("home");
+      reset();
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       setLoginError("Verifique suas credenciais, por favor!");
@@ -89,13 +84,9 @@ export default function Login() {
     }
   };
 
-  const isValidEmail = (email) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const isValidPassword = (password) => {
-    return password.length > 0;
-  };
+  const isValidPassword = (password) => password.length > 0;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -183,9 +174,9 @@ export default function Login() {
           )}
 
           <View style={styles.forgotPasswordContainer}>
-            <Link href="/recoveryPassword" style={styles.forgotPasswordText}>
-              <Text>Esqueceu a senha?</Text>
-            </Link>
+            <Pressable onPress={() => navigation.navigate("recoveryPassword")}>
+              <Text style={styles.forgotPasswordText}>Esqueceu a senha?</Text>
+            </Pressable>
           </View>
 
           <Pressable
@@ -203,9 +194,9 @@ export default function Login() {
           <View style={styles.signupContainer}>
             <Text style={styles.signupText}>
               Não tem cadastro?{" "}
-              <Link href="/signup">
+              <Pressable onPress={() => navigation.navigate("signup")}>
                 <Text style={styles.signupLink}>Se cadastre agora!</Text>
-              </Link>
+              </Pressable>
             </Text>
           </View>
         </ScrollView>
@@ -279,7 +270,6 @@ const styles = StyleSheet.create({
   },
   buttonLoading: {
     opacity: 0.7,
-    fontSize: 18,
   },
   signupContainer: {
     flexDirection: "row",
