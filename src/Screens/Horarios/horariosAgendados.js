@@ -11,7 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { fetchHorarios, SwitchPagamentos } from "../../api/api";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import DateTime from "../../components/Inputs/DateTime";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -133,7 +133,7 @@ const ScheduledTimes = () => {
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
       ) : filteredTimes.length === 0 ? (
-        <Text>Nenhum horário agendado</Text>
+        <Text style={styles.noResultsText}>Nenhum horário agendado</Text>
       ) : (
         <FlatList
           data={filteredTimes}
@@ -142,27 +142,34 @@ const ScheduledTimes = () => {
 
             return (
               <View style={styles.timeSlot} key={index}>
-                <Text style={styles.label}>Nome do campo</Text>
-                <Text style={styles.value}>{item.field.name}</Text>
-                <Text style={styles.label}>Data</Text>
-                <Text style={styles.value}>
-                  {format(new Date(item.start_time), "dd/MM/yyyy")}
-                </Text>
-                <Text style={styles.label}>Hora de início</Text>
-                <Text style={styles.value}>
-                  {format(new Date(item.start_time), "HH:mm")}
-                </Text>
-                <Text style={styles.label}>Hora de término</Text>
-                <Text style={styles.value}>
-                  {format(new Date(item.end_time), "HH:mm")}
-                </Text>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.label}>Nome do campo:</Text>
+                  <Text style={styles.value}>{item.field.name}</Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.label}>Data:</Text>
+                  <Text style={styles.value}>
+                    {format(new Date(item.start_time), "dd/MM/yyyy")}
+                  </Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.label}>Hora de início:</Text>
+                  <Text style={styles.value}>
+                    {format(new Date(item.start_time), "HH:mm")}
+                  </Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.label}>Hora de término:</Text>
+                  <Text style={styles.value}>
+                    {format(new Date(item.end_time), "HH:mm")}
+                  </Text>
+                </View>
                 {isAdmin && item.userName && (
-                  <>
-                    <Text style={styles.label}>Responsável</Text>
+                  <View style={styles.infoContainer}>
+                    <Text style={styles.label}>Responsável:</Text>
                     <Text style={styles.value}>{item.userName}</Text>
-                  </>
+                  </View>
                 )}
-                <Text style={styles.label}>Situação</Text>
                 <View style={styles.statusContainer}>
                   <Icon name={icon} size={20} color={color} />
                   <Text style={[styles.value, { color: color }]}>
@@ -199,6 +206,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#E8F4F8",
     alignItems: "center",
     paddingTop: 80,
+    paddingHorizontal: 20,
   },
   title: {
     fontSize: 24,
@@ -223,50 +231,70 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#3D5A80",
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 5,
   },
   datePickerText: {
     color: "#fff",
     fontSize: 16,
   },
+
   timeList: {
     alignItems: "center",
+    paddingBottom: 20,
   },
+
   timeSlot: {
     backgroundColor: "#fff",
     borderRadius: 7,
     padding: 15,
     marginVertical: 10,
     width: 300,
-    alignItems: "center",
+    // alignItems: "center",
     elevation: 5,
+  },
+  infoContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 5,
   },
   label: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#3D5A80",
+    marginRight: 10,
   },
   value: {
     fontSize: 16,
     color: "#000",
-    marginBottom: 10,
+    marginBottom: 5,
+  },
+  statusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 10,
   },
   error: {
     color: "red",
     marginBottom: 10,
   },
-  statusContainer: {
-    flexDirection: "row",
-  },
+
   payButton: {
     backgroundColor: "#28a745",
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 5,
     marginTop: 10,
+    alignItems: "center",
   },
   payButtonText: {
     color: "#fff",
+    fontSize: 16,
+  },
+  noResultsText: {
+    marginTop: 20,
     fontSize: 16,
   },
 });
