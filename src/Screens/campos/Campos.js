@@ -25,12 +25,12 @@ const Campos = () => {
   const [hourlyRate, setHourlyRate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingField, setEditingField] = useState(null);
 
   useEffect(() => {
     fetchFields();
   }, []);
 
-  // Listar todos os campos
   const fetchFields = async () => {
     try {
       const response = await axios.get(`${api_url}/fields`);
@@ -46,12 +46,10 @@ const Campos = () => {
     }
   };
 
-  // Filtrar campos com base na busca
   const filteredFields = fields.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Adicionar campo
   const addField = async () => {
     if (!name || !location || !type || !hourlyRate) {
       Alert.alert("Erro", "Todos os campos são obrigatórios.");
@@ -97,18 +95,121 @@ const Campos = () => {
   };
 
   // Atualizar dados do campo
-  const updateFields = () => {
-    console.log("atualizar campo");
+  const updateField = async () => {
+    if (!name || !location || !type || !hourlyRate) {
+      Alert.alert("Erro", "Todos os campos são obrigatórios.");
+      return;
+    }
+
+    try {
+      const hourlyRateNumber = parseFloat(
+        hourlyRate.replace(",", ".").replace("R$", "")
+      );
+      const token = await AsyncStorage.getItem("TOKEN");
+      if (!token) {
+        Alert.alert("Erro", "Token de autenticação não encontrado.");
+        return;
+      }
+
+      const response = await axios.patch(
+        `${api_url}/fields/${editingField.id}`,
+        {
+          name,
+          location,
+          type,
+          hourly_rate: hourlyRateNumber,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.status === "success") {
+        setFields(
+          fields.map((field) =>
+            field.id === editingField.id ? response.data.data : field
+          )
+        );
+        console.log("Campo atualizado:", response.data.data);
+        setName("");
+        setLocation("");
+        setType("");
+        setHourlyRate("");
+        setModalOpen(false);
+        setEditingField(null);
+        Alert.alert("Sucesso", "Campo atualizado com sucesso.");
+      } else {
+        Alert.alert("Erro", "Não foi possível atualizar o campo.");
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar campo:", error);
+      Alert.alert("Erro", "Não foi possível atualizar o campo.");
+    }
   };
 
-  // Deletar dados do campo
-  const deleteField = () => {
-    console.log("deletar campo");
+  const deleteField = async (fieldId) => {
+    Alert.alert(
+      "Confirmação",
+      "Você tem certeza que deseja excluir este campo?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem("TOKEN");
+              if (!token) {
+                console.log("Token não encontrado");
+                return;
+              }
+
+              const response = await axios.delete(
+                `${api_url}/fields/${fieldId}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+
+              if (response.status === 200) {
+                console.log("Campo deletado com sucesso");
+                await fetchFields();
+              } else {
+                console.log("Falha ao deletar o campo", response.data);
+              }
+            } catch (error) {
+              console.log("Erro ao deletar o campo", error);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
-  // const handleSetHourlyRate = () => {
-  //   setHourlyRate;
-  // };
+  const openEditModal = (field) => {
+    setName(field.name);
+    setLocation(field.location);
+    setType(field.type);
+    setHourlyRate(field.hourly_rate.toString());
+    setEditingField(field);
+    setModalOpen(true);
+  };
+
+  const handleSaveField = () => {
+    if (editingField) {
+      updateField();
+    } else {
+      addField();
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -157,10 +258,16 @@ const Campos = () => {
               </Text>
             </View>
             <View style={styles.iconContainer}>
-              <Pressable style={styles.iconButton} onPress={updateFields}>
+              <Pressable
+                style={styles.iconButton}
+                onPress={() => openEditModal(item)}
+              >
                 <AntDesign name="edit" size={24} color="blue" />
               </Pressable>
-              <Pressable style={styles.iconButton} onPress={deleteField}>
+              <Pressable
+                style={styles.iconButton}
+                onPress={() => deleteField(item.id)}
+              >
                 <AntDesign name="delete" size={24} color="red" />
               </Pressable>
             </View>
@@ -172,11 +279,20 @@ const Campos = () => {
         visible={modalOpen}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setModalOpen(false)}
+        onRequestClose={() => {
+          setModalOpen(false);
+          setEditingField(null);
+          setName("");
+          setLocation("");
+          setType("");
+          setHourlyRate("");
+        }}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Adicionar Campo</Text>
+            <Text style={styles.modalTitle}>
+              {editingField ? "Editar Campo" : "Adicionar Campo"}
+            </Text>
             <TextInput
               placeholder="Nome do campo"
               value={name}
@@ -195,22 +311,34 @@ const Campos = () => {
               onChangeText={setType}
               style={styles.input}
             />
+
             <ValorHora
-              placeholder="Valor da hora"
               value={hourlyRate}
               onChangeText={setHourlyRate}
               style={styles.input}
-              keyboardType="numeric"
             />
-            <Pressable style={styles.button} onPress={addField}>
-              <Text style={styles.buttonText}>Adicionar Campo</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.button, styles.buttonClose]}
-              onPress={() => setModalOpen(false)}
-            >
-              <Text style={styles.buttonText}>Cancelar</Text>
-            </Pressable>
+
+            <View style={styles.modalButtonContainer}>
+              <Pressable
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setModalOpen(false);
+                  setEditingField(null);
+                  setName("");
+                  setLocation("");
+                  setType("");
+                  setHourlyRate("");
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={handleSaveField}
+              >
+                <Text style={styles.saveButtonText}>Salvar</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Modal>
@@ -221,110 +349,75 @@ const Campos = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    // backgroundColor: "#fff",
     backgroundColor: "#E8F4F8",
-    padding: 16,
   },
-
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+    alignSelf: "center",
+  },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 10,
   },
-
   searchInput: {
-    // flex: 1,
-    fontSize: 16,
-    padding: 8,
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    backgroundColor: "#fff",
+    borderRadius: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
-
   searchIcon: {
-    marginLeft: 8,
+    marginLeft: 10,
   },
-
   addButton: {
-    backgroundColor: "#3D5A80",
-    padding: 10,
-    width: 150,
-    borderRadius: 8,
+    backgroundColor: "#3D3DDA",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+    marginLeft: 10,
   },
-
   addButtonText: {
     color: "#fff",
-    fontSize: 16,
-  },
-
-  title: {
-    fontSize: 24,
     fontWeight: "bold",
-    color: "#3D5A80",
-    marginVertical: 20,
-    textAlign: "center",
+    fontSize: 14,
   },
-
+  list: {
+    marginTop: 10,
+  },
   fieldItem: {
     flexDirection: "row",
+    alignItems: "center",
+
     justifyContent: "space-between",
     backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 8,
-    marginVertical: 8,
-    elevation: 5,
+
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
   },
+
   fieldTextContainer: {
     flex: 1,
+    marginRight: 10,
   },
   fieldText: {
     fontSize: 16,
-    color: "#333",
-    fontWeight: "bold",
-  },
-  descriptionItens: {
-    color: "#3D5A80",
   },
   iconContainer: {
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: "row",
   },
   iconButton: {
-    marginLeft: 8,
-    marginBottom: 5,
-  },
-  inputContainer: {
-    marginTop: 16,
-  },
-  modal: {
-    backgroundColor: "red",
-  },
-  input: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 8,
-    marginVertical: 10,
-    fontSize: 16,
-    elevation: 5,
-  },
-  button: {
-    backgroundColor: "green",
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: 'center',
-    marginTop: 16,
-    elevation: 5,
-  },
-  buttonClose: {
-    backgroundColor: "#c44d4d",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+    marginLeft: 10,
   },
   modalContainer: {
     flex: 1,
@@ -333,18 +426,54 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    width: "80%",
     backgroundColor: "#fff",
-
-    borderRadius: 8,
-    padding: 16,
-    elevation: 10,
+    borderRadius: 10,
+    padding: 20,
+    width: "80%",
+    alignItems: "center",
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
+    marginBottom: 10,
+  },
+  input: {
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 10,
+  },
+  modalButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+    marginTop: 10,
+    width: "48%",
+    alignItems: "center",
+  },
+  cancelButton: {
+    backgroundColor: "#ccc",
+  },
+  cancelButtonText: {
+    color: "#000",
+  },
+  saveButton: {
+    backgroundColor: "#3D3DDA",
+  },
+  saveButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  descriptionItens: {
+    fontWeight: "bold",
   },
 });
 
