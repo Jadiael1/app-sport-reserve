@@ -8,7 +8,7 @@ export const CellPhoneNumber = forwardRef((props, ref) => {
       <TextInputMask
         type={"cel-phone"}
         placeholder="Telefone"
-        keyboardType="numeric"
+        inputMode="numeric"
         includeRawValueInChangeText
         ref={ref}
         {...props}

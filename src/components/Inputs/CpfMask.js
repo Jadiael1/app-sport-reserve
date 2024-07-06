@@ -8,7 +8,7 @@ const CpfMask = forwardRef((props, ref) => {
       <TextInputMask
         type={"cpf"}
         placeholder="CPF"
-        keyboardType="numeric"
+        inputMode="numeric"
         includeRawValueInChangeText
         ref={ref}
         {...props}
