@@ -407,6 +407,9 @@ const styles = StyleSheet.create({
   },
   fieldText: {
     fontSize: 16,
+    fontWeight: "bold",
+    color: "#3D5A80",
+    marginRight: 10,
   },
   iconContainer: {
     flexDirection: "row",
@@ -468,7 +471,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   descriptionItens: {
-    fontWeight: "bold",
+    fontWeight: 500,
+    color: '#000'
   },
 });
 
