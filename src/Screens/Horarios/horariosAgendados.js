@@ -1,3 +1,5 @@
+// components/ScheduledTimes.js
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -6,17 +8,19 @@ import {
   FlatList,
   ActivityIndicator,
   Pressable,
+  Alert,
 } from "react-native";
-import { fetchHorarios, fetchFieldName } from "../../api/api";
-import { format, parse } from "date-fns";
+import { fetchHorarios, SwitchPagamentos } from "../../api/api";
+import { format } from "date-fns";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import DateTime from "../../components/Inputs/DateTime";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const getStatusDetails = (status) => {
   switch (status) {
     case "PAID":
       return { displayName: "Pago", color: "#28a745", icon: "check-circle" };
-    case "pending":
+    case "WAITING":
       return {
         displayName: "Pendente",
         color: "#ffc107",
@@ -35,23 +39,19 @@ const ScheduledTimes = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [filteredTimes, setFilteredTimes] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loadingPayments, setLoadingPayments] = useState(false);
 
   useEffect(() => {
     const loadHorarios = async () => {
       setLoading(true);
       try {
         const horarios = await fetchHorarios();
-        const horariosWithFieldNames = await Promise.all(
-          horarios.map(async (horario) => {
-            const fieldName = await fetchFieldName(horario.field_id);
-            return { ...horario, fieldName };
-          })
-        );
-        const sortedHorarios = horariosWithFieldNames.sort(
+        const sortedHorarios = horarios.sort(
           (a, b) => new Date(a.start_time) - new Date(b.start_time)
         );
         setScheduledTimes(sortedHorarios);
-        setFilteredTimes(sortedHorarios); // Inicialmente todos os horários
+        setFilteredTimes(sortedHorarios);
       } catch (error) {
         setError("Erro ao carregar os horários");
         console.log("Erro ao carregar", error);
@@ -63,10 +63,36 @@ const ScheduledTimes = () => {
     loadHorarios();
   }, []);
 
-  // Função para filtrar os horários baseado na data selecionada
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const isAdminValue = await AsyncStorage.getItem("IS_ADMIN");
+        setIsAdmin(isAdminValue === "1");
+      } catch (error) {
+        console.log("Erro ao verificar status de admin:", error);
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
+
+  const handlePayments = async (reserveId) => {
+    try {
+      setLoadingPayments(true);
+      await SwitchPagamentos(reserveId);
+      await loadHorarios();
+      Alert.alert("Sucesso", "Pagamento realizado com sucesso!");
+    } catch (error) {
+      console.log("Erro ao atualizar o pagamento", error);
+      Alert.alert("Erro", "Não foi possível realizar o pagamento.");
+    } finally {
+      setLoadingPayments(false);
+    }
+  };
+
   const filterTimesByDate = () => {
     if (!dateFilter) {
-      setFilteredTimes(scheduledTimes); // Mostrar todos os horários se nenhum filtro de data estiver definido
+      setFilteredTimes(scheduledTimes);
       return;
     }
 
@@ -85,7 +111,11 @@ const ScheduledTimes = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Horários Agendados</Text>
+      {isAdmin ? (
+        <Text style={styles.title}>Horários Agendados</Text>
+      ) : (
+        <Text style={styles.title}>Meus Agendamentos</Text>
+      )}
 
       <View style={styles.datePickerContainer}>
         <DateTime
@@ -109,12 +139,11 @@ const ScheduledTimes = () => {
           data={filteredTimes}
           renderItem={({ item, index }) => {
             const { displayName, color, icon } = getStatusDetails(item.status);
-            const totalValue = parseFloat(item.total_value);
 
             return (
               <View style={styles.timeSlot} key={index}>
                 <Text style={styles.label}>Nome do campo</Text>
-                <Text style={styles.value}>{item.fieldName}</Text>
+                <Text style={styles.value}>{item.field.name}</Text>
                 <Text style={styles.label}>Data</Text>
                 <Text style={styles.value}>
                   {format(new Date(item.start_time), "dd/MM/yyyy")}
@@ -127,15 +156,12 @@ const ScheduledTimes = () => {
                 <Text style={styles.value}>
                   {format(new Date(item.end_time), "HH:mm")}
                 </Text>
-                <Text style={styles.label}>Responsável</Text>
-                <Text style={styles.value}>
-                  {/* Colocar o nome de quem agendou */}
-                </Text>
-                <Text style={styles.label}>Valor total</Text>
-                <Text style={styles.value}>
-                  {/* Colocar o valor total daquele horário */}
-                  {isNaN(totalValue) ? "N/A" : `R$ ${totalValue.toFixed(2)}`}
-                </Text>
+                {isAdmin && item.userName && (
+                  <>
+                    <Text style={styles.label}>Responsável</Text>
+                    <Text style={styles.value}>{item.userName}</Text>
+                  </>
+                )}
                 <Text style={styles.label}>Situação</Text>
                 <View style={styles.statusContainer}>
                   <Icon name={icon} size={20} color={color} />
@@ -143,6 +169,19 @@ const ScheduledTimes = () => {
                     {displayName}
                   </Text>
                 </View>
+                {item.status === "WAITING" && (
+                  <Pressable
+                    style={styles.payButton}
+                    onPress={() => handlePayments(item.id)}
+                    disabled={loadingPayments}
+                  >
+                    {loadingPayments ? (
+                      <ActivityIndicator size={"small"} color={"#fff"} />
+                    ) : (
+                      <Text style={styles.payButtonText}>Pagar</Text>
+                    )}
+                  </Pressable>
+                )}
               </View>
             );
           }}
@@ -219,6 +258,16 @@ const styles = StyleSheet.create({
   },
   statusContainer: {
     flexDirection: "row",
+  },
+  payButton: {
+    backgroundColor: "#28a745",
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  payButtonText: {
+    color: "#fff",
+    fontSize: 16,
   },
 });
 
