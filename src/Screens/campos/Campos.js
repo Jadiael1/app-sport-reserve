@@ -221,12 +221,7 @@ const Campos = () => {
           style={styles.searchInput}
           onChangeText={(text) => setSearchQuery(text)}
         />
-        <FontAwesome5
-          name="search"
-          size={24}
-          color="black"
-          style={styles.searchIcon}
-        />
+
         <Pressable style={styles.addButton} onPress={() => setModalOpen(true)}>
           <Text style={styles.addButtonText}>Adicionar campo</Text>
         </Pressable>
