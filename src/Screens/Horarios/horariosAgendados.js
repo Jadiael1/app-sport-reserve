@@ -8,12 +8,13 @@ import {
   Pressable,
 } from "react-native";
 import { fetchHorarios, fetchFieldName } from "../../api/api";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import DateTime from "../../components/Inputs/DateTime";
 
 const getStatusDetails = (status) => {
   switch (status) {
-    case "paid":
+    case "PAID":
       return { displayName: "Pago", color: "#28a745", icon: "check-circle" };
     case "pending":
       return {
@@ -30,18 +31,30 @@ const getStatusDetails = (status) => {
 
 const ScheduledTimes = () => {
   const [scheduledTimes, setScheduledTimes] = useState([]);
+  const [dateFilter, setDateFilter] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [filteredTimes, setFilteredTimes] = useState([]);
 
   useEffect(() => {
     const loadHorarios = async () => {
       setLoading(true);
       try {
         const horarios = await fetchHorarios();
-        setScheduledTimes(horarios);
+        const horariosWithFieldNames = await Promise.all(
+          horarios.map(async (horario) => {
+            const fieldName = await fetchFieldName(horario.field_id);
+            return { ...horario, fieldName };
+          })
+        );
+        const sortedHorarios = horariosWithFieldNames.sort(
+          (a, b) => new Date(a.start_time) - new Date(b.start_time)
+        );
+        setScheduledTimes(sortedHorarios);
+        setFilteredTimes(sortedHorarios); // Inicialmente todos os horários
       } catch (error) {
         setError("Erro ao carregar os horários");
-        console.log("erro ao carregar", error);
+        console.log("Erro ao carregar", error);
       } finally {
         setLoading(false);
       }
@@ -50,19 +63,50 @@ const ScheduledTimes = () => {
     loadHorarios();
   }, []);
 
+  // Função para filtrar os horários baseado na data selecionada
+  const filterTimesByDate = () => {
+    if (!dateFilter) {
+      setFilteredTimes(scheduledTimes); // Mostrar todos os horários se nenhum filtro de data estiver definido
+      return;
+    }
+
+    const parsedSelectedDate = parse(dateFilter, "dd/MM/yyyy", new Date());
+    const filteredAndSortedTimes = scheduledTimes.filter((horario) => {
+      const horarioDate = new Date(horario.start_time);
+      return (
+        horarioDate.getDate() === parsedSelectedDate.getDate() &&
+        horarioDate.getMonth() === parsedSelectedDate.getMonth() &&
+        horarioDate.getFullYear() === parsedSelectedDate.getFullYear()
+      );
+    });
+
+    setFilteredTimes(filteredAndSortedTimes);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Horários Agendados</Text>
+
+      <View style={styles.datePickerContainer}>
+        <DateTime
+          value={dateFilter}
+          onChangeText={(text) => setDateFilter(text)}
+          style={styles.dateInput}
+        />
+        <Pressable style={styles.datePickerButton} onPress={filterTimesByDate}>
+          <Text style={styles.datePickerText}>Filtrar</Text>
+        </Pressable>
+      </View>
 
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
-      ) : scheduledTimes === 0 ? (
+      ) : filteredTimes.length === 0 ? (
         <Text>Nenhum horário agendado</Text>
       ) : (
         <FlatList
-          data={scheduledTimes}
+          data={filteredTimes}
           renderItem={({ item, index }) => {
             const { displayName, color, icon } = getStatusDetails(item.status);
             const totalValue = parseFloat(item.total_value);
@@ -83,8 +127,13 @@ const ScheduledTimes = () => {
                 <Text style={styles.value}>
                   {format(new Date(item.end_time), "HH:mm")}
                 </Text>
+                <Text style={styles.label}>Responsável</Text>
+                <Text style={styles.value}>
+                  {/* Colocar o nome de quem agendou */}
+                </Text>
                 <Text style={styles.label}>Valor total</Text>
                 <Text style={styles.value}>
+                  {/* Colocar o valor total daquele horário */}
                   {isNaN(totalValue) ? "N/A" : `R$ ${totalValue.toFixed(2)}`}
                 </Text>
                 <Text style={styles.label}>Situação</Text>
@@ -110,7 +159,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#E8F4F8",
     alignItems: "center",
-    paddingTop: 30,
+    paddingTop: 80,
   },
   title: {
     fontSize: 24,
@@ -118,11 +167,25 @@ const styles = StyleSheet.create({
     color: "#3D5A80",
     marginBottom: 20,
   },
+  datePickerContainer: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
+  dateInput: {
+    backgroundColor: "#fff",
+    borderColor: "#3D5A80",
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    marginRight: 10,
+    width: 150,
+  },
   datePickerButton: {
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "#3D5A80",
     padding: 10,
     borderRadius: 5,
-    marginBottom: 20,
   },
   datePickerText: {
     color: "#fff",
