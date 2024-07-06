@@ -11,7 +11,7 @@ const DateTime = forwardRef((props, ref) => {
           format: "DD/MM/YYYY",
         }}
         placeholder="Digite a data"
-        keyboardType="default"
+        inputMode="number-pad"
         includeRawValueInChangeText
         ref={ref}
         {...props}
