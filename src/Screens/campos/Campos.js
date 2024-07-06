@@ -106,9 +106,9 @@ const Campos = () => {
     console.log("deletar campo");
   };
 
-  const handleSetHourlyRate = () => {
-    setHourlyRate;
-  };
+  // const handleSetHourlyRate = () => {
+  //   setHourlyRate;
+  // };
 
   return (
     <SafeAreaView style={styles.container}>
