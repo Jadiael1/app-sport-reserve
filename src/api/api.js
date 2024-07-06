@@ -25,9 +25,14 @@ export const fetchHorarios = async () => {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log('resposta', response.data)
+    console.log("resposta do fetchHorarios", response.data.data.data);
+    horarios = response.data.data.data;
+    horarios.forEach((horario) => {
+      console.log("id do usuário", horario.user_id);
+      // console.log("usuario", user.name);
+    });
     if (response.data.status === "success") {
-      // console.log("resposta", response.data.data.data);
+      console.log("resposta dos horários", response.data.data.data);
       return response.data.data.data;
     } else {
       throw new Error("Erro ao buscar os agendamentos");
@@ -42,6 +47,7 @@ export const fetchHorarios = async () => {
 export const fetchFieldName = async (field_id) => {
   try {
     const response = await axios.get(`${api_url}/fields/${field_id}`);
+
     if (response.data.status === "success") {
       return response.data.data.name;
     } else {
@@ -62,7 +68,7 @@ export const SwitchPagamentos = async (reserveId) => {
     const paymentUrl = response.data.data.url;
     WebBrowser.openBrowserAsync(paymentUrl);
 
-    await notifyPayment(response.data.data.id, "paid");
+    // await notifyPayment(response.data.data.id, "paid");
     console.log("pagamento", notifyPayment);
   } catch (error) {
     console.log("Erro ao redirecionar para pagamento:", error);
@@ -73,23 +79,3 @@ export const SwitchPagamentos = async (reserveId) => {
   }
 };
 
-// Confirmação do pagamento
-export const notifyPayment = async (paymentId, status) => {
-  try {
-    const token = await AsyncStorage.getItem("TOKEN");
-    const response = await axios.post(
-      `${api_url}/payments/notify`,
-      { paymentId, status },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    console.log("Notificação de pagamento enviada com sucesso:", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Erro ao enviar notificação de pagamento:", error);
-    throw error;
-  }
-};
