@@ -8,6 +8,7 @@ import {
   Pressable,
   Alert,
   SafeAreaView,
+  Platform,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
@@ -17,6 +18,7 @@ import axios from "axios";
 import DateTimePicker from "react-native-modal-datetime-picker";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import DateTime from "../components/Inputs/DateTime";
 
 const AgendarHorario = () => {
   const navigation = useNavigation();
@@ -31,7 +33,7 @@ const AgendarHorario = () => {
   const [selectedEndTime, setSelectedEndTime] = useState(undefined);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showPaymentCountdown, setShowPaymentCountdown] = useState(false);
-  const [countdown, setCountdown] = useState(2); // Contador de 2 segundos
+  const [countdown, setCountdown] = useState(2);
 
   const availableStartTimes = [
     "Selecione",
@@ -95,6 +97,7 @@ const AgendarHorario = () => {
     setShowDatePicker(false);
   };
 
+  // Limpar formulário
   const resetForm = () => {
     setSelectedField(undefined);
     setSelectedDate(undefined);
@@ -171,6 +174,11 @@ const AgendarHorario = () => {
           },
         }
       );
+      console.log(selectedField);
+      console.log(setSelectedDate);
+      console.log(setSelectedStartTime);
+      console.log(setSelectedEndTime);
+      console.log(setTotalCost);
 
       const reservationId = response.data.data.id;
       console.log("Reserva feita:", response.data);
@@ -212,24 +220,35 @@ const AgendarHorario = () => {
             ))}
           </Picker>
           <Text style={styles.label}>Selecione a Data:</Text>
-          <Pressable
-            onPress={() => setShowDatePicker(true)}
-            style={styles.datePickerButton}
-          >
-            <Icon name="calendar-today" size={24} color="#3D5A80" />
-            <Text style={styles.datePickerButtonText}>
-              {selectedDate
-                ? selectedDate.toLocaleDateString()
-                : "Selecione a Data"}
-            </Text>
-          </Pressable>
-          <DateTimePicker
-            isVisible={showDatePicker}
-            mode="date"
-            display="calendar"
-            onConfirm={handleDateChange}
-            onCancel={() => setShowDatePicker(false)}
-          />
+          {Platform.OS === "web" ? (
+            <DateTime
+              value={selectedDate}
+              // onChange={(value) => setSelectedDate(new Date(value))}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              style={styles.dateInput}
+            />
+          ) : (
+            <>
+              <Pressable
+                onPress={() => setShowDatePicker(true)}
+                style={styles.datePickerButton}
+              >
+                <Icon name="calendar-today" size={24} color="#3D5A80" />
+                <Text style={styles.datePickerButtonText}>
+                  {selectedDate
+                    ? selectedDate.toLocaleDateString()
+                    : "Selecione a Data"}
+                </Text>
+              </Pressable>
+              <DateTimePicker
+                isVisible={showDatePicker}
+                mode="date"
+                display="calendar"
+                onConfirm={handleDateChange}
+                onCancel={() => setShowDatePicker(false)}
+              />
+            </>
+          )}
           <Text style={styles.label}>Selecione o Horário de Início:</Text>
           <Picker
             selectedValue={selectedStartTime}
@@ -339,6 +358,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: "#3D5A80",
+  },
+  dateInput: {
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 7,
+    marginBottom: 20,
   },
 });
 
