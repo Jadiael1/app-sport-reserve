@@ -1,11 +1,14 @@
+import * as WebBrowser from "expo-web-browser";
 import axios from "axios";
 import { api_url } from "../constants/constants";
+import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Campos
 export const fetchFields = async () => {
   try {
     const response = await axios.get(`${api_url}/fields`);
+
     if (response.data.status === "success") {
       return response.data.data.data;
     } else {
@@ -25,15 +28,19 @@ export const fetchHorarios = async () => {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log("resposta do fetchHorarios", response.data.data.data);
-    horarios = response.data.data.data;
-    horarios.forEach((horario) => {
-      console.log("id do usuário", horario.user_id);
-      // console.log("usuario", user.name);
-    });
+
     if (response.data.status === "success") {
-      console.log("resposta dos horários", response.data.data.data);
-      return response.data.data.data;
+      const isAdmin = await AsyncStorage.getItem("IS_ADMIN");
+      const horarios = response.data.data.data.map((horario) => {
+        const enhancedHorario = {
+          ...horario,
+          // Adicionar userName apenas se o usuário for admin
+          userName: isAdmin === "1" ? horario.user.name : null,
+        };
+        return enhancedHorario;
+      });
+
+      return horarios;
     } else {
       throw new Error("Erro ao buscar os agendamentos");
     }
@@ -62,20 +69,36 @@ export const fetchFieldName = async (field_id) => {
 // Pagamentos
 export const SwitchPagamentos = async (reserveId) => {
   try {
-    const response = await axios.get(
-      `${api_url}/payments/reservations/${reserveId}/pay`
+    const token = await AsyncStorage.getItem("TOKEN");
+    if (!token) {
+      throw new Error("Token não encontrado");
+    }
+
+    const response = await axios.post(
+      `${api_url}/payments/reservations/${reserveId}/pay`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
     const paymentUrl = response.data.data.url;
     WebBrowser.openBrowserAsync(paymentUrl);
 
-    // await notifyPayment(response.data.data.id, "paid");
-    console.log("pagamento", notifyPayment);
+    console.log("Resposta do pagamento:", response.data);
   } catch (error) {
     console.log("Erro ao redirecionar para pagamento:", error);
-    Alert.alert(
-      "Erro",
-      "Não foi possível redirecionar para a página de pagamento."
-    );
+    if (error.response && error.response.status === 401) {
+      Alert.alert(
+        "Erro de autenticação",
+        "Sua sessão expirou. Faça login novamente para continuar."
+      );
+    } else {
+      Alert.alert(
+        "Erro",
+        "Não foi possível redirecionar para a página de pagamento."
+      );
+    }
   }
 };
-

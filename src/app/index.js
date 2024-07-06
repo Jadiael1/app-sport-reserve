@@ -76,7 +76,7 @@ export default function Login() {
       navigation.navigate("home");
       reset();
     } catch (error) {
-      console.error("Erro ao fazer login:", error);
+      // console.error("Erro ao fazer login:", error);
       setLoginError("Verifique suas credenciais, por favor!");
       Vibration.vibrate(400);
     } finally {

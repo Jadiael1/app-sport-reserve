@@ -19,6 +19,7 @@ import DateTimePicker from "react-native-modal-datetime-picker";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTime from "../components/Inputs/DateTime";
+import { SwitchPagamentos } from "../api/api";
 
 const AgendarHorario = () => {
   const navigation = useNavigation();
