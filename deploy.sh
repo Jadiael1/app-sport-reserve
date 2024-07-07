@@ -8,10 +8,10 @@ git pull origin main
 
 # Execute comandos de deploy, por exemplo:
 # Instalar dependências do npm
-/usr/bin/npm install
+/opt/nvm/versions/node/v22.4.0/bin/npm install
 
 # Instalar dependência child_process do npm
-/usr/bin/npm install child_process
+/opt/nvm/versions/node/v22.4.0/bin/npm install child_process
 
 # da permissão de execução para o expo
 chmod a+x ./node_modules/.bin/expo
