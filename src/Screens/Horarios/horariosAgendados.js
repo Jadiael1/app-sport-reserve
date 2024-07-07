@@ -16,7 +16,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import DateTime from "../../components/Inputs/DateTime";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const getStatusDetails = (status) => {
+export const getStatusDetails = (status) => {
   switch (status) {
     case "PAID":
       return { displayName: "Pago", color: "#28a745", icon: "check-circle" };
@@ -26,7 +26,7 @@ const getStatusDetails = (status) => {
         color: "#ffc107",
         icon: "hourglass-empty",
       };
-    case "canceled":
+    case "CANCELED":
       return { displayName: "Cancelado", color: "#dc3545", icon: "cancel" };
     default:
       return { displayName: status, color: "#000", icon: "info" };

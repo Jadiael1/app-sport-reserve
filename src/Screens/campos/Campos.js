@@ -14,9 +14,9 @@ import { ValorHora } from "../../components/Inputs/ValorHora";
 import { api_url } from "../../constants/constants";
 import { AntDesign } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { Entypo } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 const Campos = () => {
   const [fields, setFields] = useState([]);
   const [name, setName] = useState("");
@@ -29,7 +29,7 @@ const Campos = () => {
 
   useEffect(() => {
     fetchFields();
-  }, []);
+  }, [fetchFields]);
 
   const fetchFields = async () => {
     try {
@@ -257,13 +257,13 @@ const Campos = () => {
                 style={styles.iconButton}
                 onPress={() => openEditModal(item)}
               >
-                <AntDesign name="edit" size={24} color="blue" />
+                <Feather name="edit" size={24} color="blue" />
               </Pressable>
               <Pressable
                 style={styles.iconButton}
                 onPress={() => deleteField(item.id)}
               >
-                <AntDesign name="delete" size={24} color="red" />
+                <Entypo name="trash" size={24} color="#FF0000" />
               </Pressable>
             </View>
           </View>
@@ -471,8 +471,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   descriptionItens: {
-    fontWeight: 500,
-    color: '#000'
+    fontWeight: "bold",
+    color: "#000",
   },
 });
 
