@@ -8,7 +8,8 @@ import HorariosAgendados from "../Screens/Horarios/horariosAgendados";
 import ListaCampos from "../Screens/campos/Campos";
 import signUp from "../app/signup";
 import recoveryPassword from "../app/recoveryPassword";
-import { Profile } from "../app/profile";
+// import { Profile } from "../app/profile";
+import UserProfile from "../Screens/Profile/UsersProfile/UserProfile";  // Ensure correct path
 
 const Stack = createStackNavigator();
 
@@ -26,7 +27,7 @@ const linking = {
       signup: "signUp",
       validation: "validation",
       listaCampos: "listaCampos",
-      profile: "profile",
+      userProfile: "userProfile",
     },
   },
 };
@@ -70,8 +71,8 @@ export default function AppNavigator() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="profile"
-        component={Profile}
+        name="userProfile"
+        component={UserProfile}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
