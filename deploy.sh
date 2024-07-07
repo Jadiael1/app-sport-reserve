@@ -21,38 +21,44 @@ rm -f /home/juvhost1/app-sport-reserve.juvhost.com/startExpo.js
 
 # Cria startExpo.js
 cat << 'EOF' > startExpo.js
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 const fs = require('fs');
+const path = require('path');
+
+const projectDir = path.resolve('/home/juvhost1/app-sport-reserve.juvhost.com');
 
 // Cria um stream de escrita para o arquivo de log
 const logStream = fs.createWriteStream('expo_start.log', { flags: 'a' });
 
+const command = './node_modules/.bin/expo';
+
+const args = ['start', '--port', '50003'];
+
 // Executa o comando 'expo start --web'
-const process = exec('./node_modules/.bin/expo start --port 50003', (error, stdout, stderr) => {
-  if (error) {
-    const errorMsg = `Erro ao executar o comando: ${error}\n`;
-    console.error(errorMsg);
-    logStream.write(errorMsg);
-    return;
-  }
-  if (stderr) {
-    const errorOutput = `Erro: ${stderr}\n`;
-    console.error(errorOutput);
-    logStream.write(errorOutput);
-    return;
-  }
-  console.log(`Saída: ${stdout}`);
-  logStream.write(`Saída: ${stdout}\n`);
+const child = spawn(command, args, { cwd: projectDir, shell: true });
+
+// Capturar a saída padrão e de erro
+child.stdout.on('data', (data) => {
+  console.log(`stdout: ${data}`);
+  logStream.write(`stdout: ${data}`);
 });
 
-// Garante que a saída do processo seja exibida no console
-process.stdout.on('data', (data) => {
-  console.log(data.toString());
-  logStream.write(data.toString());
+child.stderr.on('data', (data) => {
+  // Ignorar o erro específico de xdg-open
+  if (!data.includes('spawn xdg-open ENOENT')) {
+    console.error(`stderr: ${data}`);
+    logStream.write(`stderr: ${data}`);
+  }
 });
 
-process.stderr.on('data', (data) => {
-  console.error(data.toString());
-  logStream.write(data.toString());
+child.on('error', (error) => {
+  console.error(`Erro ao executar o comando: ${error.message}`);
+  logStream.write(`Erro ao executar o comando: ${error.message}`);
+});
+
+child.on('close', (code) => {
+  console.log(`Processo filho finalizado com código ${code}`);
+  logStream.write(`Processo filho finalizado com código ${code}`);
+
 });
 EOF
