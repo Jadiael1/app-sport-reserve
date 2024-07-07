@@ -16,6 +16,9 @@ git pull origin main
 # da permissão de execução para o expo
 chmod a+x ./node_modules/.bin/expo
 
+# remove startExpo.js
+rm -f /home/juvhost1/app-sport-reserve.juvhost.com/startExpo.js
+
 # Cria startExpo.js
 cat << 'EOF' > startExpo.js
 const { exec } = require('child_process');
@@ -25,7 +28,7 @@ const fs = require('fs');
 const logStream = fs.createWriteStream('expo_start.log', { flags: 'a' });
 
 // Executa o comando 'expo start --web'
-const process = exec('./node_modules/.bin/expo start --web --port 50003', (error, stdout, stderr) => {
+const process = exec('./node_modules/.bin/expo start --port 50003', (error, stdout, stderr) => {
   if (error) {
     const errorMsg = `Erro ao executar o comando: ${error}\n`;
     console.error(errorMsg);
