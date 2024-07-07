@@ -29,7 +29,7 @@ const Campos = () => {
 
   useEffect(() => {
     fetchFields();
-  }, [fetchFields]);
+  }, []);
 
   const fetchFields = async () => {
     try {
