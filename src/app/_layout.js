@@ -27,9 +27,15 @@ export default function RootLayout() {
   if (!fontsLoaded) {
     return (
       <View style={styles.container}>
-        <Text style={styles.logo}>SportReserve</Text>
+        <Text style={styles.logo}>
+          Sport<Text style={styles.textReserve}>Reserve</Text>
+        </Text>
         <Text>Aluguel fácil, jogo garantido</Text>
-        <ActivityIndicator size="large" color="#0000ff" style={{ alignItems: "center", justifyContent: "center" }} />
+        <ActivityIndicator
+          size="large"
+          color="#0000ff"
+          style={{ alignItems: "center", justifyContent: "center" }}
+        />
       </View>
     );
   }
@@ -55,5 +61,8 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "bold",
     color: "#3D5A80",
+  },
+  textReserve: {
+    color: "#007BFF",
   },
 });
