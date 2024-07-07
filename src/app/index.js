@@ -99,7 +99,7 @@ export default function Login() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>SportReserve</Text>
+            <Text style={styles.logoText}>SportReserve1</Text>
           </View>
 
           <View style={styles.inputContainer}>

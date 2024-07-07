@@ -1,6 +1,6 @@
 # Sistema de Agendamento de Quadras Esportivas
 
-Este é um projeto de um sistema de agendamento de quadras esportivas desenvolvido utilizando React Native..
+Este é um projeto de um sistema de agendamento de quadras esportivas desenvolvido utilizando React Native.
 
 ## Funcionalidades
 
