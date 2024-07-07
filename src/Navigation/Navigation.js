@@ -1,6 +1,6 @@
+import * as Linking from "expo-linking";
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import * as Linking from "expo-linking";
 import TabNavigator from "./TabNavigation";
 import LoginScreen from "../app/index";
 import AgendarHorario from "../app/agendarHorario";

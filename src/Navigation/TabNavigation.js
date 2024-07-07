@@ -8,6 +8,7 @@ import {
 import { Profile } from "../app/profile";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Home from "../app/home";
+import HomeNoAdmin from "../Screens/Home/HomeNoAdmin";
 import AdminHome from "../Screens/Home/HomeAdmin";
 import AgendarHorario from "../app/agendarHorario";
 import HorariosAgendados from "../Screens/Horarios/horariosAgendados";
@@ -40,7 +41,7 @@ export default function TabNavigator() {
     >
       <Tab.Screen
         name="Home"
-        component={isAdmin ? AdminHome : Home}
+        component={isAdmin ? AdminHome : HomeNoAdmin}
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size, focused }) => (

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Validation from "./validation";
+import Validation from "../../app/validation";
 import { router } from "expo-router";
 import { api_url } from "../../constants/constants";
 
