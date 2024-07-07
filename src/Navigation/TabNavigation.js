@@ -4,6 +4,7 @@ import {
   Ionicons,
   AntDesign,
   MaterialCommunityIcons,
+  FontAwesome5,
 } from "@expo/vector-icons";
 import { Profile } from "../app/profile";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -59,8 +60,8 @@ export default function TabNavigator() {
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? "clipboard-sharp" : "clipboard-outline"}
+            <FontAwesome5
+              name={focused ? "clipboard" : "clipboard-list"}
               size={size}
               color={color}
             />
