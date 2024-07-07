@@ -13,6 +13,8 @@ git pull origin main
 # Instalar dependência child_process do npm
 /opt/nvm/versions/node/v22.4.0/bin/npm install child_process
 
+git restore package.json package-lock.json
+
 # da permissão de execução para o expo
 chmod a+x ./node_modules/.bin/expo
 
