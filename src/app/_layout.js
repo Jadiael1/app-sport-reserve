@@ -13,6 +13,8 @@ export default function RootLayout() {
     PoppinsReg: require("../../assets/fonts/Poppins-Regular.ttf"),
     PoppinsBold: require("../../assets/fonts/Poppins-Bold.ttf"),
     PoppinsSemiBold: require("../../assets/fonts/Poppins-SemiBold.ttf"),
+    RenegadePursuit: require("../../assets/fonts/RenegadePursuit-ywMr5.ttf"),
+    NewofWord: require("../../assets/fonts/News of the World wide.ttf"),
   });
 
   const [isAppReady, setAppReady] = useState(false);
@@ -27,9 +29,15 @@ export default function RootLayout() {
   if (!fontsLoaded) {
     return (
       <View style={styles.container}>
-        <Text style={styles.logo}>SportReserve</Text>
+        <Text style={styles.logo}>
+          Sport<Text style={styles.reserveLogo}>Reserve</Text>
+        </Text>
         <Text>Aluguel fácil, jogo garantido</Text>
-        <ActivityIndicator size="large" color="#0000ff" style={{ alignItems: "center", justifyContent: "center" }} />
+        <ActivityIndicator
+          size="large"
+          color="#0000ff"
+          style={{ alignItems: "center", justifyContent: "center" }}
+        />
       </View>
     );
   }
@@ -55,5 +63,8 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "bold",
     color: "#3D5A80",
+  },
+  reserveLogo: {
+    color: "#007BFF",
   },
 });

@@ -8,7 +8,8 @@ import HorariosAgendados from "../Screens/Horarios/horariosAgendados";
 import ListaCampos from "../Screens/campos/Campos";
 import signUp from "../app/signup";
 import recoveryPassword from "../app/recoveryPassword";
-import { Profile } from "../app/profile";
+import Profile from "../Screens/Profile/ProfileUser";
+import MenuProfile from "../Screens/Profile/Menu/MenuProfile";
 
 const Stack = createStackNavigator();
 
@@ -27,6 +28,7 @@ const linking = {
       validation: "validation",
       listaCampos: "listaCampos",
       profile: "profile",
+      menuProfile: "menuProfile",
     },
   },
 };
@@ -72,6 +74,11 @@ export default function AppNavigator() {
       <Stack.Screen
         name="profile"
         component={Profile}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="menuProfile"
+        component={MenuProfile}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

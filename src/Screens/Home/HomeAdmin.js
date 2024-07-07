@@ -102,6 +102,7 @@ export default function AdminHome() {
           <Ionicons name="time" size={24} color="#007AFF" />
           {format(parseISO(item.start_time), "HH:mm")}
         </Text>
+
         <Text style={styles.horarioText}>
           <FontAwesome name="times" size={24} color="#007AFF" />{" "}
           {format(parseISO(item.end_time), "HH:mm")}
@@ -191,6 +192,7 @@ const styles = StyleSheet.create({
   },
   horarioText: {
     fontSize: 16,
+
   },
   TextDateToday: {
     fontWeight: "bold",

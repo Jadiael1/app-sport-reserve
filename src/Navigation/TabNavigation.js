@@ -6,7 +6,8 @@ import {
   MaterialCommunityIcons,
   FontAwesome5,
 } from "@expo/vector-icons";
-import { Profile } from "../app/profile";
+// import { Profile } from "../app/profile";
+import Profile from "../Screens/Profile/ProfileUser";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Home from "../app/home";
 import HomeNoAdmin from "../Screens/Home/HomeNoAdmin";

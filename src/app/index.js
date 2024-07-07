@@ -99,7 +99,9 @@ export default function Login() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>SportReserve</Text>
+            <Text style={styles.logoText}>
+              Sport<Text style={styles.reserveLogo}>Reserve</Text>
+            </Text>
           </View>
 
           <View style={styles.inputContainer}>
@@ -223,9 +225,12 @@ const styles = StyleSheet.create({
     marginBottom: 50,
   },
   logoText: {
-    fontSize: 32,
+    fontSize: 50,
     fontWeight: "bold",
     color: "#3D5A80",
+  },
+  reserveLogo: {
+    color: "#007BFF",
   },
   inputContainer: {
     flexDirection: "row",
@@ -251,9 +256,10 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   forgotPasswordText: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#007BFF",
     textDecorationLine: "underline",
+    fontFamily: "PoppinsReg",
   },
   button: {
     backgroundColor: "#3D5A80",
@@ -282,6 +288,7 @@ const styles = StyleSheet.create({
   },
   signupLink: {
     fontWeight: "bold",
+    alignItems: "center",
     color: "#3D5A80",
   },
   errorMessage: {
