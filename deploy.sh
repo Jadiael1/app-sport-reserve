@@ -21,44 +21,47 @@ rm -f /home/juvhost1/app-sport-reserve.juvhost.com/startExpo.js
 
 # Cria startExpo.js
 cat << 'EOF' > startExpo.js
-const { spawn } = require('child_process');
+const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
 const projectDir = path.resolve('/home/juvhost1/app-sport-reserve.juvhost.com');
 
 // Cria um stream de escrita para o arquivo de log
-const logStream = fs.createWriteStream('expo_start.log', { flags: 'a' });
+const logStream = fs.createWriteStream('/home/juvhost1/app-sport-reserve.juvhost.com/expo_start.log', { flags: 'a' });
 
-const command = './node_modules/.bin/expo';
+const command = './node_modules/.bin/expo start . --port 50003';
 
-const args = ['start', '--port', '50003'];
+logStream.write(`node_version: ${process.version}\n`);
 
-// Executa o comando 'expo start --web'
-const child = spawn(command, args, { cwd: projectDir, shell: true });
 
-// Capturar a saída padrão e de erro
-child.stdout.on('data', (data) => {
-  console.log(`stdout: ${data}`);
-  logStream.write(`stdout: ${data}`);
-});
-
-child.stderr.on('data', (data) => {
-  // Ignorar o erro específico de xdg-open
-  if (!data.includes('spawn xdg-open ENOENT')) {
-    console.error(`stderr: ${data}`);
-    logStream.write(`stderr: ${data}`);
+const myProcess = exec(command, { cwd: projectDir, shell: true }, (error, stdout, stderr) => {
+  if (error) {
+    console.error(`Erro ao executar o comando: ${error.message}`);
+    logStream.write(`Erro ao executar o comando: ${error.message}`);
+    return;
   }
+
+  if (stderr) {
+    console.error(`stderr: ${stderr}`);
+    logStream.write(`stderr: ${stderr}`);
+  }
+
+  console.log(`stdout: ${stdout}`);
+  logStream.write(`stdout: ${stdout}`);
 });
 
-child.on('error', (error) => {
-  console.error(`Erro ao executar o comando: ${error.message}`);
-  logStream.write(`Erro ao executar o comando: ${error.message}`);
+
+myProcess.stdout.on('data', (data) => {
+  console.log(data.toString());
+  logStream.write(data.toString());
 });
 
-child.on('close', (code) => {
-  console.log(`Processo filho finalizado com código ${code}`);
-  logStream.write(`Processo filho finalizado com código ${code}`);
-
+myProcess.stderr.on('data', (data) => {
+  console.error(data.toString());
+  logStream.write(data.toString());
 });
 EOF
+
+# restart app-reserve.service service
+sudo systemctl restart app-reserve.service
