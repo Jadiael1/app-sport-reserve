@@ -8,7 +8,7 @@ export const ValorHora = forwardRef((props, ref) => {
       <TextInputMask
         type={"money"}
         placeholder="Valor da hora"
-        keyboardType="numeric"
+        inputMode="numeric"
         includeRawValueInChangeText
         ref={ref}
         {...props}
@@ -16,5 +16,3 @@ export const ValorHora = forwardRef((props, ref) => {
     </View>
   );
 });
-
-

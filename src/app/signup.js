@@ -148,7 +148,7 @@ export default function SignUp() {
                 <TextInput
                   placeholder="Nome Completo"
                   style={styles.input}
-                  keyboardType="default"
+                  inputMode="default"
                   autoCapitalize="words"
                   onBlur={onBlur}
                   onChangeText={onChange}
@@ -221,7 +221,7 @@ export default function SignUp() {
                 <TextInput
                   placeholder="E-mail"
                   style={styles.input}
-                  keyboardType="email-address"
+                  inputMode="email-address"
                   autoCapitalize="none"
                   onBlur={onBlur}
                   onChangeText={onChange}
