@@ -47,7 +47,22 @@ const ScheduledTimes = () => {
       setLoading(true);
       try {
         const horarios = await fetchHorarios();
-        const sortedHorarios = horarios.sort(
+        const updatedHorarios = horarios.map((horario) => {
+          return {
+            ...horario,
+            payments: horario.payments.map((payment) => ({
+              ...payment,
+              formattedAmount: parseFloat(payment.amount).toLocaleString(
+                "pt-BR",
+                {
+                  style: "currency",
+                  currency: "BRL",
+                }
+              ),
+            })),
+          };
+        });
+        const sortedHorarios = updatedHorarios.sort(
           (a, b) => new Date(a.start_time) - new Date(b.start_time)
         );
         setScheduledTimes(sortedHorarios);
@@ -164,6 +179,19 @@ const ScheduledTimes = () => {
                     {format(new Date(item.end_time), "HH:mm")}
                   </Text>
                 </View>
+                {item.payments && item.payments.length > 0 && (
+                  <View style={styles.infoContainer}>
+                    <Text style={styles.label}>Valor</Text>
+                    {item.payments.map((payment) => (
+                      <View key={payment.id} style={styles.paymentItem}>
+                        <Text style={styles.value}>
+                          {payment.formattedAmount}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
                 {isAdmin && item.userName && (
                   <View style={styles.infoContainer}>
                     <Text style={styles.label}>Responsável:</Text>

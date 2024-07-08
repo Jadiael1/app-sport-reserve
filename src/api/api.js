@@ -28,7 +28,7 @@ export const fetchHorarios = async () => {
         Authorization: `Bearer ${token}`,
       },
     });
-
+    // console.log("horarios", response.data.data.data);
     if (response.data.status === "success") {
       const isAdmin = await AsyncStorage.getItem("IS_ADMIN");
       const horarios = response.data.data.data.map((horario) => {
@@ -83,6 +83,7 @@ export const SwitchPagamentos = async (reserveId) => {
         },
       }
     );
+    console.log("pagamento", response.data);
     const paymentUrl = response.data.data.url;
     WebBrowser.openBrowserAsync(paymentUrl);
 
