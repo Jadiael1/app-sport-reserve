@@ -349,6 +349,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 7,
     marginBottom: 20,
+    pointerEvents: "auto", // Substitui pointerEvents
+    role: "button", // Substitui accessibilityRole
   },
   datePickerButtonText: {
     color: "#3D5A80",
