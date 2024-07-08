@@ -43,7 +43,7 @@ const AdminDashboard = () => {
         </Pressable>
         <View style={styles.userInfo}>
           <Text style={styles.username}>Nome do admin</Text>
-          <Text style={styles.bio}>Jogador caro</Text>
+          {/* <Text style={styles.bio}>Jogador caro</Text> */}
         </View>
 
         <View style={styles.menuContainer}>
@@ -54,7 +54,7 @@ const AdminDashboard = () => {
         </View>
       </View>
 
-      <View style={styles.statsContainer}>
+      {/* <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>100</Text>
           <Text style={styles.statLabel}>Posts</Text>
@@ -63,7 +63,7 @@ const AdminDashboard = () => {
           <Text style={styles.statNumber}>200</Text>
           <Text style={styles.statLabel}>Horários Marcados</Text>
         </View>
-      </View>
+      </View> */}
 
       <View style={styles.buttonContainer}>
         <Button title="Editar perfil" type="outline" />
