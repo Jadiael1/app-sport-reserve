@@ -144,12 +144,23 @@ const Campos = () => {
         Alert.alert("Erro", "Não foi possível atualizar o campo.");
       }
     } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
-      Alert.alert("Erro", "Não foi possível atualizar o campo.");
+      console.error(
+        "Erro ao atualizar campo:",
+        error.response || error.message
+      );
+      if (error.response && error.response.status === 403) {
+        Alert.alert(
+          "Erro de permissão",
+          "Você não tem permissão para esta ação."
+        );
+      } else {
+        Alert.alert("Erro", "Não foi possível atualizar o campo.");
+      }
     }
   };
 
   const deleteField = async (fieldId) => {
+    console.log("deletar");
     Alert.alert(
       "Confirmação",
       "Você tem certeza que deseja excluir este campo?",
@@ -169,6 +180,8 @@ const Campos = () => {
                 return;
               }
 
+              console.log("Token de autenticação:", token);
+
               const response = await axios.delete(
                 `${api_url}/fields/${fieldId}`,
                 {
@@ -180,12 +193,16 @@ const Campos = () => {
 
               if (response.status === 200) {
                 console.log("Campo deletado com sucesso");
+                Alert.alert("Campo deletado com sucesso");
                 await fetchFields();
               } else {
                 console.log("Falha ao deletar o campo", response.data);
               }
             } catch (error) {
-              console.log("Erro ao deletar o campo", error);
+              console.log(
+                "Erro ao deletar o campo",
+                error.response || error.message
+              );
             }
           },
         },
@@ -443,6 +460,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     marginBottom: 10,
+    // textTransform: "capitalize",
   },
   modalButtonContainer: {
     flexDirection: "row",
