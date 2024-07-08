@@ -8,8 +8,7 @@ import HorariosAgendados from "../Screens/Horarios/horariosAgendados";
 import ListaCampos from "../Screens/campos/Campos";
 import signUp from "../app/signup";
 import recoveryPassword from "../app/recoveryPassword";
-// import { Profile } from "../app/profile";
-import UserProfile from "../Screens/Profile/UsersProfile/UserProfile";  // Ensure correct path
+import { Profile } from "../app/profile";
 
 const Stack = createStackNavigator();
 
@@ -24,10 +23,10 @@ const linking = {
       agendarHorario: "agendarHorario",
       horariosAgendados: "horariosAgendados",
       recoveryPassword: "recoveryPassword",
-      signup: "signUp",
+      signup: "signup",
       validation: "validation",
       listaCampos: "listaCampos",
-      userProfile: "userProfile",
+      profile: "profile",
     },
   },
 };
@@ -42,12 +41,12 @@ export default function AppNavigator() {
       />
       <Stack.Screen
         name="signup"
-        component={signUp}
+        component={SignUp}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name="recoveryPassword"
-        component={recoveryPassword}
+        component={RecoveryPassword}
         options={{ headerShown: false }}
       />
       <Stack.Screen
@@ -73,6 +72,11 @@ export default function AppNavigator() {
       <Stack.Screen
         name="userProfile"
         component={UserProfile}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="menuProfile"
+        component={MenuProfile}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

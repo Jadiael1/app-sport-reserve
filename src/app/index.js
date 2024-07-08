@@ -225,12 +225,9 @@ const styles = StyleSheet.create({
     marginBottom: 50,
   },
   logoText: {
-    fontSize: 32,
+    fontSize: 50,
     fontWeight: "bold",
     color: "#3D5A80",
-  },
-  textReserve: {
-    color: "#007BFF",
   },
   inputContainer: {
     flexDirection: "row",
@@ -256,9 +253,10 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   forgotPasswordText: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#007BFF",
     textDecorationLine: "underline",
+    fontFamily: "PoppinsReg",
   },
   button: {
     backgroundColor: "#3D5A80",
@@ -287,6 +285,7 @@ const styles = StyleSheet.create({
   },
   signupLink: {
     fontWeight: "bold",
+    alignItems: "center",
     color: "#3D5A80",
   },
   errorMessage: {

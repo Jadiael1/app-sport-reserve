@@ -126,8 +126,12 @@ export default function SignUp() {
           contentInsetAdjustmentBehavior="automatic"
         >
           <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>SportReserve</Text>
-            <Text style={styles.textLogo}>Cadastre-se</Text>
+            <Text style={styles.logoText}>
+              Sport<Text style={styles.reserveLogo}>Reserve</Text>
+            </Text>
+            <Text style={styles.textLogo}>
+              Cadastre-se e faça parte do melhor agendamento de quadras
+            </Text>
           </View>
 
           <View style={styles.inputContainer}>
@@ -327,6 +331,7 @@ const styles = StyleSheet.create({
   },
   keyboardAvoidingView: {
     flex: 1,
+    marginTop: 30,
   },
   scrollViewContainer: {
     flexGrow: 1,
@@ -335,13 +340,18 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   logoContainer: {
+    // textAlign: 'center',
     marginBottom: 50,
   },
   logoText: {
     marginTop: 50,
     fontSize: 32,
     fontWeight: "bold",
+    textAlign: "center",
     color: "#3D5A80",
+  },
+  reserveLogo: {
+    color: "#007BFF",
   },
   textLogo: {
     marginTop: 20,
