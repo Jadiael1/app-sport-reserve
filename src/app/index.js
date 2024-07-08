@@ -292,4 +292,7 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: 12,
   },
+  textReserve:{
+    color: "#007BFF",
+  }
 });
