@@ -6,7 +6,7 @@ import {
   MaterialCommunityIcons,
   FontAwesome5,
 } from "@expo/vector-icons";
-// import { Profile } from "../app/profile";
+
 import Profile from "../Screens/Profile/ProfileUser";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import HomeNoAdmin from "../Screens/Home/HomeNoAdmin";
@@ -14,8 +14,8 @@ import AdminHome from "../Screens/Home/HomeAdmin";
 import AgendarHorario from "../app/agendarHorario";
 import HorariosAgendados from "../Screens/Horarios/horariosAgendados";
 import ListaCampos from "../Screens/campos/Campos";
-import UserProfile from "../Screens/Profile/UsersProfile/UserProfile";  // Ensure correct path
-import AdminProfile from "../Screens/Profile/UsersProfile/AdminProfile";  // Ensure correct path
+import UserProfile from "../Screens/Profile/UsersProfile/UserProfile";
+import AdminProfile from "../Screens/Profile/UsersProfile/AdminProfile";
 
 const Tab = createBottomTabNavigator();
 
