@@ -11,7 +11,7 @@ import { Avatar, Button } from "react-native-elements";
 import { FlatList } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { MenuProfile } from "./Menu/MenuProfile";
+// import { MenuProfile } from "./Menu/MenuProfile";
 import { Logout } from "../../components/buttons/logout";
 
 const Profile = () => {
