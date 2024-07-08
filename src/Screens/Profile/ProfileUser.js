@@ -13,6 +13,7 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { MenuProfile } from "./Menu/MenuProfile";
 import { Logout } from "../../components/buttons/logout";
+
 const Profile = () => {
   const posts = [
     { id: "1", imageUrl: "https://via.placeholder.com/150" },
@@ -21,7 +22,6 @@ const Profile = () => {
     { id: "2", imageUrl: "https://via.placeholder.com/150" },
     { id: "2", imageUrl: "https://via.placeholder.com/150" },
     { id: "2", imageUrl: "https://via.placeholder.com/150" },
-    // Add more post URLs here
   ];
 
   const handleProfileClick = () => {

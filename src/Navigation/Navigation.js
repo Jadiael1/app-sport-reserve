@@ -6,8 +6,8 @@ import LoginScreen from "../app/index";
 import AgendarHorario from "../app/agendarHorario";
 import HorariosAgendados from "../Screens/Horarios/horariosAgendados";
 import ListaCampos from "../Screens/campos/Campos";
-import signUp from "../app/signup";
-import recoveryPassword from "../app/recoveryPassword";
+import SignUp from "../app/signup";
+import RecoveryPassword from "../app/recoveryPassword";
 import Profile from "../Screens/Profile/ProfileUser";
 import MenuProfile from "../Screens/Profile/Menu/MenuProfile";
 
@@ -24,7 +24,7 @@ const linking = {
       agendarHorario: "agendarHorario",
       horariosAgendados: "horariosAgendados",
       recoveryPassword: "recoveryPassword",
-      signup: "signUp",
+      signup: "signup",
       validation: "validation",
       listaCampos: "listaCampos",
       profile: "profile",
@@ -43,12 +43,12 @@ export default function AppNavigator() {
       />
       <Stack.Screen
         name="signup"
-        component={signUp}
+        component={SignUp}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name="recoveryPassword"
-        component={recoveryPassword}
+        component={RecoveryPassword}
         options={{ headerShown: false }}
       />
       <Stack.Screen
