@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { Avatar, Button } from "react-native-elements";
 import { FlatList } from "react-native";
-// import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Logout } from "../../../components/buttons/logout";
@@ -18,10 +17,10 @@ const UserProfile = () => {
   const posts = [
     { id: "1", imageUrl: "https://via.placeholder.com/150" },
     { id: "2", imageUrl: "https://via.placeholder.com/150" },
-    { id: "2", imageUrl: "https://via.placeholder.com/150" },
-    { id: "2", imageUrl: "https://via.placeholder.com/150" },
-    { id: "2", imageUrl: "https://via.placeholder.com/150" },
-    { id: "2", imageUrl: "https://via.placeholder.com/150" },
+    { id: "3", imageUrl: "https://via.placeholder.com/150" },
+    { id: "4", imageUrl: "https://via.placeholder.com/150" },
+    { id: "5", imageUrl: "https://via.placeholder.com/150" },
+    { id: "6", imageUrl: "https://via.placeholder.com/150" },
     // Add more post URLs here
   ];
 
@@ -32,7 +31,7 @@ const UserProfile = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.headerContainer}>
-        <Pressable>
+        <Pressable onPress={handleProfileClick}>
           <Avatar
             rounded
             size="large"
@@ -49,7 +48,7 @@ const UserProfile = () => {
           <Pressable onPress={handleProfileClick}>
             <Ionicons name="menu" size={26} color="black" />
           </Pressable>
-          <Logout/>
+          <Logout />
         </View>
       </View>
 
