@@ -175,14 +175,8 @@ const AgendarHorario = () => {
           },
         }
       );
-      console.log(selectedField);
-      console.log(setSelectedDate);
-      console.log(setSelectedStartTime);
-      console.log(setSelectedEndTime);
-      console.log(setTotalCost);
 
       const reservationId = response.data.data.id;
-      console.log("Reserva feita:", response.data);
 
       setShowPaymentCountdown(true);
 
@@ -207,7 +201,7 @@ const AgendarHorario = () => {
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Agendar Horário</Text>
       {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#3D5A80" />
       ) : (
         <View style={styles.form}>
           <Text style={styles.label}>Selecione o Campo:</Text>
@@ -224,7 +218,6 @@ const AgendarHorario = () => {
           {Platform.OS === "web" ? (
             <DateTime
               value={selectedDate}
-              // onChange={(value) => setSelectedDate(new Date(value))}
               onChange={(e) => setSelectedDate(e.target.value)}
               style={styles.dateInput}
             />
@@ -275,7 +268,7 @@ const AgendarHorario = () => {
             <Text
               style={{
                 fontWeight: "bold",
-                color: "#000",
+                color: "#3D5A80",
                 textDecorationLine: "underline",
               }}
             >
@@ -301,72 +294,73 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#E8F4F8",
     alignItems: "center",
-    justifyContent: "center",
-    paddingTop: 30,
-    paddingHorizontal: 20,
+    justifyContent: "flex-start",
+    paddingTop: 40,
+    paddingHorizontal: 24,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#3D5A80",
     marginBottom: 20,
+    paddingTop: 40,
   },
   form: {
-    width: "80%",
+    width: "90%",
     marginTop: 30,
   },
   label: {
     fontSize: 18,
     color: "#3D5A80",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   picker: {
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    marginBottom: 20,
-  },
-  error: {
-    color: "red",
-    marginBottom: 10,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    marginBottom: 24,
+    elevation: 2,
   },
   buttonAgendar: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#3D5A90",
-    paddingVertical: 15,
-    borderRadius: 7,
+    backgroundColor: "#3D5A80",
+    paddingVertical: 16,
+    borderRadius: 10,
     marginVertical: 20,
     elevation: 5,
   },
   txtBtnAgendar: {
-    color: "#fff",
-    textAlign: "center",
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  countdown: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#3D5A80",
   },
   datePickerButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 7,
-    marginBottom: 20,
-    pointerEvents: "auto", // Substitui pointerEvents
-    role: "button", // Substitui accessibilityRole
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginBottom: 24,
+    elevation: 2,
   },
   datePickerButtonText: {
     color: "#3D5A80",
     fontSize: 16,
     marginLeft: 10,
   },
-  countdown: {
-    marginTop: 10,
-    fontSize: 16,
-    color: "#3D5A80",
-  },
   dateInput: {
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 7,
-    marginBottom: 20,
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginBottom: 24,
+    elevation: 2,
   },
 });
 

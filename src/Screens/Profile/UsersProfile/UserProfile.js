@@ -48,7 +48,6 @@ const UserProfile = () => {
           <Pressable onPress={handleProfileClick}>
             <Ionicons name="menu" size={26} color="black" />
           </Pressable>
-          <Logout />
         </View>
       </View>
 
@@ -75,6 +74,7 @@ const UserProfile = () => {
           <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
         )}
       />
+      <Logout />
     </ScrollView>
   );
 };

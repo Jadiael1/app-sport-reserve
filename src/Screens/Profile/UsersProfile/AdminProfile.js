@@ -26,7 +26,7 @@ const AdminDashboard = () => {
   };
 
   const handleReportClick = (report) => {
-    // Navigate to the report detail screen
+
     router.navigate(report.id);
   };
 
@@ -43,27 +43,14 @@ const AdminDashboard = () => {
         </Pressable>
         <View style={styles.userInfo}>
           <Text style={styles.username}>Nome do admin</Text>
-          {/* <Text style={styles.bio}>Jogador caro</Text> */}
         </View>
 
-        <View style={styles.menuContainer}>
+        {/* <View style={styles.menuContainer}>
           <Pressable onPress={handleProfileClick}>
             <Ionicons name="menu" size={26} color="black" />
           </Pressable>
-          <Logout />
-        </View>
+        </View> */}
       </View>
-
-      {/* <View style={styles.statsContainer}>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>100</Text>
-          <Text style={styles.statLabel}>Posts</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>200</Text>
-          <Text style={styles.statLabel}>Horários Marcados</Text>
-        </View>
-      </View> */}
 
       <View style={styles.buttonContainer}>
         <Button title="Editar perfil" type="outline" />
@@ -83,16 +70,7 @@ const AdminDashboard = () => {
           </Pressable>
         )}
       />
-
-      {/* <Text style={styles.sectionTitle}>Recent Posts</Text> */}
-      {/* <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id}
-        numColumns={3}
-        renderItem={({ item }) => (
-          <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
-        )}
-      /> */}
+      <Logout />
     </ScrollView>
   );
 };
@@ -106,6 +84,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: 20,
     alignItems: "center",
+    marginTop: 30,
   },
   avatar: {
     marginRight: 20,
