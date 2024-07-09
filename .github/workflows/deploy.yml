@@ -21,5 +21,17 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.VPS_DEPLOY_KEY }}
 
-    - name: Run deployment script on VPS
-      run: ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} 'bash -s' < deploy.sh
+    - name: Clean VPS directory
+      run: |
+        ssh -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} << 'EOF'
+          # Remove todos os arquivos e diretórios no VPS_APP_DIR
+          rm -rf ${{ secrets.VPS_APP_DIR }}/*
+          
+          # Encontra e remove de forma segura todos os arquivos que começam com um ponto
+          find ${{ secrets.VPS_APP_DIR }} -type f -name ".*" -exec rm -f {} +
+          find ${{ secrets.VPS_APP_DIR }} -type d -name ".*" -exec rm -rf {} +
+        EOF
+
+    - name: Copy files to VPS
+      run: |
+        rsync -avz --delete -e "ssh -p ${{ secrets.VPS_PORT }}" ./ ${{ secrets.VPS_HOST }}:${{ secrets.VPS_APP_DIR }}/
