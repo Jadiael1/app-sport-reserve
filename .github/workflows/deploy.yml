@@ -39,3 +39,28 @@ jobs:
     - name: Copy files to VPS
       run: |
         rsync -avz --delete -e "ssh -p ${{ secrets.VPS_PORT }}" ./ ${{ secrets.VPS_HOST }}:${{ secrets.VPS_APP_DIR }}/
+
+    - name: Run commands on VPS
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} << 'EOF'
+          cd ${{ secrets.VPS_APP_DIR }}
+          unzip -o main.zip -d ./
+          rm main.zip
+          npm install
+          npx expo export --platform web
+          find ${{ secrets.VPS_APP_DIR }} -mindepth 1 -not -name 'dist' -not -path '${{ secrets.VPS_APP_DIR }}/dist/*' -exec rm -rf {} +
+          mv dist/* .
+          rm -rf dist
+          cat <<EOT > .htaccess
+            <IfModule mod_rewrite.c>
+              RewriteEngine On
+              RewriteBase /
+
+              # Redireciona tudo para index.html
+              RewriteRule ^index\.html$ - [L]
+              RewriteCond %{REQUEST_FILENAME} !-f
+              RewriteCond %{REQUEST_FILENAME} !-d
+              RewriteRule . /index.html [L]
+            </IfModule>
+          EOT
+        EOF
