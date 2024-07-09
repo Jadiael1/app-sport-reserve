@@ -35,7 +35,7 @@ jobs:
 
     - name: Create npm install script
       run: |
-        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "echo -e '#!/bin/bash\ncd ${{ secrets.VPS_APP_DIR }}\n/opt/nvm/versions/node/v22.4.0/bin/npm install' > ${{ secrets.VPS_APP_DIR }}/install_dependencies.sh"
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "echo -e '#!/bin/bash\nexport PATH=/opt/nvm/versions/node/v22.4.0/bin:$PATH\ncd ${{ secrets.VPS_APP_DIR }}\n/opt/nvm/versions/node/v22.4.0/bin/npm install' > ${{ secrets.VPS_APP_DIR }}/install_dependencies.sh"
 
     - name: Make npm install script executable
       run: |
@@ -47,7 +47,7 @@ jobs:
     
     - name: Create export web application script
       run: |
-        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "echo -e '#!/bin/bash\ncd ${{ secrets.VPS_APP_DIR }}\n/opt/nvm/versions/node/v22.4.0/bin/npx expo export --platform web' > ${{ secrets.VPS_APP_DIR }}/export_web.sh"
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "echo -e '#!/bin/bash\nexport PATH=/opt/nvm/versions/node/v22.4.0/bin:$PATH\ncd ${{ secrets.VPS_APP_DIR }}\n/opt/nvm/versions/node/v22.4.0/bin/npx expo export --platform web' > ${{ secrets.VPS_APP_DIR }}/export_web.sh"
     
     - name: Make export web application script executable
       run: |
