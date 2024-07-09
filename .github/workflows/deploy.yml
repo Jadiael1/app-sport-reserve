@@ -33,13 +33,29 @@ jobs:
       run: |
         rsync -avz --delete -e "ssh -p ${{ secrets.VPS_PORT }}" ./ ${{ secrets.VPS_HOST }}:${{ secrets.VPS_APP_DIR }}/
 
+    - name: Create npm install script
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "echo '#!/bin/bash\ncd ${{ secrets.VPS_APP_DIR }}\n/opt/nvm/versions/node/v22.4.0/bin/npm install' > ${{ secrets.VPS_APP_DIR }}/install_dependencies.sh"
+
+    - name: Make npm install script executable
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "chmod +x ${{ secrets.VPS_APP_DIR }}/install_dependencies.sh"
+
     - name: Install npm dependencies
       run: |
-        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_APP_DIR }} && /opt/nvm/versions/node/v22.4.0/bin/npm install"
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "${{ secrets.VPS_APP_DIR }}/install_dependencies.sh"
     
+    - name: Create export web application script
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "echo '#!/bin/bash\ncd ${{ secrets.VPS_APP_DIR }}\n/opt/nvm/versions/node/v22.4.0/bin/npx expo export --platform web' > ${{ secrets.VPS_APP_DIR }}/export_web.sh"
+    
+    - name: Make export web application script executable
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "chmod +x ${{ secrets.VPS_APP_DIR }}/export_web.sh"
+
     - name: Export web application
       run: |
-        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_APP_DIR }} && /opt/nvm/versions/node/v22.4.0/bin/npx expo export --platform web"
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "${{ secrets.VPS_APP_DIR }}/export_web.sh"
     
     - name: Delete all except the dist folder
       run: |
