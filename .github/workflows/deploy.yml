@@ -27,40 +27,32 @@ jobs:
 
     - name: Clean VPS directory
       run: |
-        ssh -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} << 'EOF'
-          # Remove todos os arquivos e diretórios no VPS_APP_DIR
-          rm -rf ${{ secrets.VPS_APP_DIR }}/*
-          
-          # Encontra e remove de forma segura todos os arquivos que começam com um ponto
-          find ${{ secrets.VPS_APP_DIR }} -type f -name ".*" -exec rm -f {} +
-          find ${{ secrets.VPS_APP_DIR }} -type d -name ".*" -exec rm -rf {} +
-        EOF
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "find ${{ secrets.VPS_APP_DIR }} -mindepth 1 -exec rm -rf {} +"
 
     - name: Copy files to VPS
       run: |
         rsync -avz --delete -e "ssh -p ${{ secrets.VPS_PORT }}" ./ ${{ secrets.VPS_HOST }}:${{ secrets.VPS_APP_DIR }}/
 
-    - name: Run commands on VPS
+    - name: Install npm dependencies
       run: |
-        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} << 'EOF'
-          cd ${{ secrets.VPS_APP_DIR }}
-          unzip -o main.zip -d ./
-          rm main.zip
-          npm install
-          npx expo export --platform web
-          find ${{ secrets.VPS_APP_DIR }} -mindepth 1 -not -name 'dist' -not -path '${{ secrets.VPS_APP_DIR }}/dist/*' -exec rm -rf {} +
-          mv dist/* .
-          rm -rf dist
-          cat <<EOT > .htaccess
-            <IfModule mod_rewrite.c>
-              RewriteEngine On
-              RewriteBase /
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_APP_DIR }} && npm install"
+    
+    - name: Export web application
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_APP_DIR }} && npx expo export --platform web"
+    
+    - name: Delete all except the dist folder
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "find ${{ secrets.VPS_APP_DIR }} -mindepth 1 -not -name 'dist' -not -path '${{ secrets.VPS_APP_DIR }}/dist/*' -exec rm -rf {} +"
 
-              # Redireciona tudo para index.html
-              RewriteRule ^index\.html$ - [L]
-              RewriteCond %{REQUEST_FILENAME} !-f
-              RewriteCond %{REQUEST_FILENAME} !-d
-              RewriteRule . /index.html [L]
-            </IfModule>
-          EOT
-        EOF
+    - name: Move all from the dist folder to the current directory
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "mv ${{ secrets.VPS_APP_DIR }}/dist/* ${{ secrets.VPS_APP_DIR }}/"
+
+    - name: Remove dist folder
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "rm -rf ${{ secrets.VPS_APP_DIR }}/dist"
+    
+    - name: Create .htaccess file
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "echo '<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteBase /\n# Redireciona tudo para index.html\nRewriteRule ^index\.html$ - [L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule . /index.html [L]\n</IfModule>' > ${{ secrets.VPS_APP_DIR }}/.htaccess"
