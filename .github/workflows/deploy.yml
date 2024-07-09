@@ -59,7 +59,7 @@ jobs:
     
     - name: Delete all except the dist folder
       run: |
-        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "find ${{ secrets.VPS_APP_DIR }} -mindepth 1 -not -name 'dist' -not -path '${{ secrets.VPS_APP_DIR }}/dist/*' -exec rm -rf {} +"
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "rm -rf ${{ secrets.VPS_APP_DIR }}/node_modules && find ${{ secrets.VPS_APP_DIR }} -mindepth 1 -not -name 'dist' -not -path '${{ secrets.VPS_APP_DIR }}/dist/*' -exec rm -rf {} +"
 
     - name: Move all from the dist folder to the current directory
       run: |
