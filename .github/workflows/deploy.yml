@@ -41,4 +41,34 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "chmod +x ${{ secrets.VPS_APP_DIR }}/install_dependencies.sh"
 
+    - name: Install npm dependencies
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "${{ secrets.VPS_APP_DIR }}/install_dependencies.sh"
     
+    - name: Create export web application script
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "echo -e '#!/bin/bash\ncd ${{ secrets.VPS_APP_DIR }}\n/opt/nvm/versions/node/v22.4.0/bin/npx expo export --platform web' > ${{ secrets.VPS_APP_DIR }}/export_web.sh"
+    
+    - name: Make export web application script executable
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "chmod +x ${{ secrets.VPS_APP_DIR }}/export_web.sh"
+
+    - name: Export web application
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "${{ secrets.VPS_APP_DIR }}/export_web.sh"
+    
+    - name: Delete all except the dist folder
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "find ${{ secrets.VPS_APP_DIR }} -mindepth 1 -not -name 'dist' -not -path '${{ secrets.VPS_APP_DIR }}/dist/*' -exec rm -rf {} +"
+
+    - name: Move all from the dist folder to the current directory
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "mv ${{ secrets.VPS_APP_DIR }}/dist/* ${{ secrets.VPS_APP_DIR }}/"
+
+    - name: Remove dist folder
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "rm -rf ${{ secrets.VPS_APP_DIR }}/dist"
+    
+    - name: Create .htaccess file
+      run: |
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "echo -e '<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteBase /\n# Redireciona tudo para index.html\nRewriteRule ^index\.html$ - [L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule . /index.html [L]\n</IfModule>' > ${{ secrets.VPS_APP_DIR }}/.htaccess"
