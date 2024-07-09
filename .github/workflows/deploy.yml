@@ -35,11 +35,11 @@ jobs:
 
     - name: Install npm dependencies
       run: |
-        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_APP_DIR }} && npm install"
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_APP_DIR }} && /opt/nvm/versions/node/v22.4.0/bin/npm install"
     
     - name: Export web application
       run: |
-        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_APP_DIR }} && npx expo export --platform web"
+        ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_APP_DIR }} && /opt/nvm/versions/node/v22.4.0/bin/npx expo export --platform web"
     
     - name: Delete all except the dist folder
       run: |
