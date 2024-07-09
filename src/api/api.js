@@ -4,6 +4,31 @@ import { api_url } from "../constants/constants";
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// Usuário
+export const fetchUser = async (setUser) => {
+  try {
+    const storedToken = await AsyncStorage.getItem("TOKEN");
+    if (!storedToken) {
+      router.navigate("index");
+      return;
+    }
+    // console.log("token", storedToken);
+    const response = await axios.get(`${api_url}/auth/user`, {
+      headers: {
+        Authorization: `Bearer ${storedToken}`,
+      },
+    });
+
+    const userData = response.data;
+    // console.log("userData", userData);
+
+    setUser(userData);
+    // console.log(userData);
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
 // Campos
 export const fetchFields = async () => {
   try {

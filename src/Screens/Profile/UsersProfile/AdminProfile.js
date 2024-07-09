@@ -1,19 +1,20 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-  Image,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import { Avatar, Button } from "react-native-elements";
 import { FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Logout } from "../../../components/buttons/logout";
+import { fetchUser } from "../../../api/api";
+import imgPerfil from "../../../../assets/perfil.png";
 
 const AdminDashboard = () => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    fetchUser(setUser);
+  }, []);
+
   const reports = [
     { id: "1", title: "Relatório de Usuários", icon: "people" },
     { id: "2", title: "Relatório de Horários", icon: "time" },
@@ -21,39 +22,34 @@ const AdminDashboard = () => {
     { id: "4", title: "Relatório de Cancelamentos", icon: "close-circle" },
   ];
 
-  const handleProfileClick = () => {
-    router.navigate("menuProfile");
-  };
-
   const handleReportClick = (report) => {
-
-    router.navigate(report.id);
+    // router.navigate(report.id);
   };
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Pressable onPress={handleProfileClick}>
-          <Avatar
-            rounded
-            size="large"
-            source={{ uri: "https://via.placeholder.com/150" }}
-            containerStyle={styles.avatar}
-          />
-        </Pressable>
-        <View style={styles.userInfo}>
-          <Text style={styles.username}>Nome do admin</Text>
+      <View style={styles.profileContainer}>
+        <View style={styles.headerContainer}>
+          <Pressable>
+            <Avatar
+              rounded
+              size="large"
+              // source={{ uri: "https://placehold.co/150x150" }}
+              containerStyle={styles.avatar}
+            />
+          </Pressable>
+          <View style={styles.userInfo}>
+            {user ? (
+              <Text style={styles.username}>{user.data.name}</Text>
+            ) : (
+              <Text style={styles.username}>Carregando</Text>
+            )}
+          </View>
         </View>
 
-        {/* <View style={styles.menuContainer}>
-          <Pressable onPress={handleProfileClick}>
-            <Ionicons name="menu" size={26} color="black" />
-          </Pressable>
-        </View> */}
-      </View>
-
-      <View style={styles.buttonContainer}>
-        <Button title="Editar perfil" type="outline" />
+        <View style={styles.buttonContainer}>
+          <Button title="Editar perfil" type="outline" />
+        </View>
       </View>
 
       <Text style={styles.sectionTitle}>Relatórios</Text>
@@ -80,13 +76,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+  profileContainer: {
+    backgroundColor: "#f0f0f0",
+    padding: 20,
+    marginBottom: 20,
+  },
   headerContainer: {
     flexDirection: "row",
-    padding: 20,
     alignItems: "center",
-    marginTop: 30,
   },
   avatar: {
+    backgroundColor: "#cdcdcd",
     marginRight: 20,
   },
   userInfo: {
@@ -96,32 +96,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-  bio: {
-    fontSize: 14,
-    color: "gray",
-  },
-  menuContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  statsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 10,
-  },
-  statItem: {
-    alignItems: "center",
-  },
-  statNumber: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  statLabel: {
-    fontSize: 14,
-    color: "gray",
-  },
   buttonContainer: {
-    padding: 20,
+    marginTop: 20,
   },
   sectionTitle: {
     fontSize: 18,
@@ -139,11 +115,6 @@ const styles = StyleSheet.create({
   reportTitle: {
     fontSize: 16,
     marginLeft: 10,
-  },
-  postImage: {
-    width: "33%",
-    height: 120,
-    margin: 1,
   },
 });
 

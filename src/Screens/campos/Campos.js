@@ -36,12 +36,12 @@ const Campos = () => {
       const response = await axios.get(`${api_url}/fields`);
       if (response.data.status === "success") {
         setFields(response.data.data.data);
-        console.log("Lista de campos recebida:", response.data.data);
+        // console.log("Lista de campos recebida:", response.data.data);
       } else {
         Alert.alert("Erro", "Não foi possível buscar os campos.");
       }
     } catch (error) {
-      console.error("Erro ao buscar campos:", error);
+      // console.error("Erro ao buscar campos:", error);
       Alert.alert("Erro", "Não foi possível buscar os campos.");
     }
   };
