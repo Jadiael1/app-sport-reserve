@@ -362,6 +362,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
+    flexWrap: "wrap",
     backgroundColor: "#fff",
     borderRadius: 7,
     padding: 10,
@@ -411,6 +412,7 @@ const styles = StyleSheet.create({
     color: "#3D5A80",
   },
   errorMessage: {
+    flexDirection: "column",
     color: "red",
     fontSize: 12,
   },

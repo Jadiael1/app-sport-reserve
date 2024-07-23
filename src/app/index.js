@@ -15,10 +15,10 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { Controller, useForm } from "react-hook-form";
-import { api_url } from "../constants/constants";
-import { CustomPasswordInput } from "../components/Inputs/CustomInputPassword";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { api_url } from "../constants/constants";
+import { CustomPasswordInput } from "../components/Inputs/CustomInputPassword";
 
 export default function Login() {
   const navigation = useNavigation();
@@ -76,7 +76,6 @@ export default function Login() {
       navigation.navigate("home");
       reset();
     } catch (error) {
-      // console.error("Erro ao fazer login:", error);
       setLoginError("Verifique suas credenciais, por favor!");
       Vibration.vibrate(400);
     } finally {
@@ -87,6 +86,107 @@ export default function Login() {
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const isValidPassword = (password) => password.length > 0;
+
+  const renderForm = () => (
+    <View>
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name="mail-outline"
+          size={20}
+          color="#666"
+          style={styles.icon}
+        />
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              placeholder="E-mail"
+              style={styles.input}
+              inputMode="email-address"
+              autoCapitalize="none"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+          name="email"
+          rules={{
+            required: {
+              value: true,
+              message: "Insira o e-mail",
+            },
+          }}
+        />
+      </View>
+
+      {errors.email && (
+        <Text style={styles.errorMessage}>{errors.email.message}</Text>
+      )}
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name="lock-closed-outline"
+          size={20}
+          color="#666"
+          style={styles.icon}
+        />
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <CustomPasswordInput
+              placeholder="Senha"
+              style={styles.input}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+          name="password"
+          rules={{
+            required: {
+              value: true,
+              message: "Insira a senha",
+            },
+          }}
+        />
+      </View>
+
+      {errors.password && (
+        <Text style={styles.errorMessage}>{errors.password.message}</Text>
+      )}
+
+      {loginError !== "" && (
+        <Text style={styles.errorMessage}>{loginError}</Text>
+      )}
+
+      <View style={styles.forgotPasswordContainer}>
+        <Pressable onPress={() => navigation.navigate("recoveryPassword")}>
+          <Text style={styles.forgotPasswordText}>Esqueceu a senha?</Text>
+        </Pressable>
+      </View>
+
+      <Pressable
+        style={[styles.button, loadingLogin && styles.buttonLoading]}
+        onPress={handleSubmit(handleLogin)}
+        disabled={loadingLogin}
+      >
+        {loadingLogin ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Entrar</Text>
+        )}
+      </Pressable>
+
+      <View style={styles.signupContainer}>
+        <Text style={styles.signupText}>
+          Não tem cadastro?{" "}
+          <Pressable onPress={() => navigation.navigate("signup")}>
+            <Text style={styles.signupLink}>Se cadastre agora!</Text>
+          </Pressable>
+        </Text>
+      </View>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -104,103 +204,11 @@ export default function Login() {
             </Text>
           </View>
 
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="mail-outline"
-              size={20}
-              color="#666"
-              style={styles.icon}
-            />
-            <Controller
-              control={control}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  placeholder="E-mail"
-                  style={styles.input}
-                  inputMode="email-address"
-                  autoCapitalize="none"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-              )}
-              name="email"
-              rules={{
-                required: {
-                  value: true,
-                  message: "Insira o e-mail",
-                },
-              }}
-            />
-          </View>
-
-          {errors.email && (
-            <Text style={styles.errorMessage}>{errors.email.message}</Text>
+          {Platform.OS === "web" ? (
+            <form onSubmit={handleSubmit(handleLogin)}>{renderForm()}</form>
+          ) : (
+            renderForm()
           )}
-
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="lock-closed-outline"
-              size={20}
-              color="#666"
-              style={styles.icon}
-            />
-            <Controller
-              control={control}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <CustomPasswordInput
-                  placeholder="Senha"
-                  style={styles.input}
-                  secureTextEntry
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-              )}
-              name="password"
-              rules={{
-                required: {
-                  value: true,
-                  message: "Insira a senha",
-                },
-              }}
-            />
-          </View>
-
-          {errors.password && (
-            <Text style={styles.errorMessage}>{errors.password.message}</Text>
-          )}
-
-          {loginError !== "" && (
-            <Text style={styles.errorMessage}>{loginError}</Text>
-          )}
-
-          <View style={styles.forgotPasswordContainer}>
-            <Pressable onPress={() => navigation.navigate("recoveryPassword")}>
-              <Text style={styles.forgotPasswordText}>Esqueceu a senha?</Text>
-            </Pressable>
-          </View>
-
-          <Pressable
-            style={[styles.button, loadingLogin && styles.buttonLoading]}
-            onPress={handleSubmit(handleLogin)}
-            disabled={loadingLogin}
-          >
-            {loadingLogin ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Entrar</Text>
-            )}
-          </Pressable>
-
-          <View style={styles.signupContainer}>
-            <Text style={styles.signupText}>
-              Não tem cadastro?{" "}
-              <Pressable onPress={() => navigation.navigate("signup")}>
-                <Text style={styles.signupLink}>Se cadastre agora!</Text>
-              </Pressable>
-            </Text>
-          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -211,6 +219,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#E8F4F8",
+    paddingTop: 50,
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -248,8 +257,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   forgotPasswordContainer: {
-    width: "100%",
+    // width: "100%",
     alignItems: "flex-end",
+    justifyContent: "end",
     marginVertical: 10,
   },
   forgotPasswordText: {
@@ -261,7 +271,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "#3D5A80",
     paddingVertical: 15,
-    paddingHorizontal: 80,
+    // paddingHorizontal: 80,
     borderRadius: 7,
     marginVertical: 20,
     elevation: 5,
@@ -270,29 +280,35 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+
+    textAlign: "center",
   },
   buttonLoading: {
     opacity: 0.7,
   },
   signupContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 20,
   },
   signupText: {
     fontSize: 16,
     color: "gray",
+    marginTop: 80,
+
+    // alignItems: "center",
+    // justifyContent: "center",
+    // backgroundColor: "blue",
   },
   signupLink: {
     fontWeight: "bold",
-    alignItems: "center",
     color: "#3D5A80",
   },
   errorMessage: {
     color: "red",
     fontSize: 12,
   },
-  textReserve:{
+  textReserve: {
     color: "#007BFF",
-  }
+  },
 });
