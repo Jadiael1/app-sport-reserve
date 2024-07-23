@@ -8,15 +8,24 @@ import {
   StyleSheet,
   Alert,
   Modal,
+  Image,
+  ScrollView,
+  Dimensions,
+  TouchableOpacity,
 } from "react-native";
 import axios from "axios";
 import { ValorHora } from "../../components/Inputs/ValorHora";
 import { api_url } from "../../constants/constants";
-import { AntDesign } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Entypo } from "@expo/vector-icons";
-import { Feather } from "@expo/vector-icons";
+import Carousel from "@kaceycleveland/react-native-reanimated-carousel";
+import * as ImagePicker from "expo-image-picker";
+import { Button as RNButton, Icon } from "react-native-elements";
+import { AntDesign } from "@expo/vector-icons";
+
+const fallbackImage = "https://placehold.co/600x400";
+const { width } = Dimensions.get("window");
+
 const Campos = () => {
   const [fields, setFields] = useState([]);
   const [name, setName] = useState("");
@@ -26,6 +35,8 @@ const Campos = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingField, setEditingField] = useState(null);
+  const [images, setImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     fetchFields();
@@ -34,14 +45,10 @@ const Campos = () => {
   const fetchFields = async () => {
     try {
       const response = await axios.get(`${api_url}/fields`);
-      if (response.data.status === "success") {
-        setFields(response.data.data.data);
-        // console.log("Lista de campos recebida:", response.data.data);
-      } else {
-        Alert.alert("Erro", "Não foi possível buscar os campos.");
-      }
+      const fields = response.data.data.data;
+      setFields(fields);
     } catch (error) {
-      // console.error("Erro ao buscar campos:", error);
+      console.error("Erro ao buscar campos:", error);
       Alert.alert("Erro", "Não foi possível buscar os campos.");
     }
   };
@@ -50,7 +57,7 @@ const Campos = () => {
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const addField = async () => {
+  const handleSaveField = async () => {
     if (!name || !location || !type || !hourlyRate) {
       Alert.alert("Erro", "Todos os campos são obrigatórios.");
       return;
@@ -61,106 +68,59 @@ const Campos = () => {
         hourlyRate.replace(",", ".").replace("R$", "")
       );
       const token = await AsyncStorage.getItem("TOKEN");
-      const response = await axios.post(
-        `${api_url}/fields`,
-        {
-          name,
-          location,
-          type,
-          hourly_rate: hourlyRateNumber,
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("location", location);
+      formData.append("type", type);
+      formData.append("hourly_rate", hourlyRateNumber);
+      images.forEach((image, index) => {
+        formData.append(`images[${index}]`, {
+          uri: image.uri,
+          type: "image/jpeg",
+          name: `image${index}.jpg`,
+        });
+      });
+
+      const url = editingField
+        ? `${api_url}/fields/${editingField.id}`
+        : `${api_url}/fields`;
+      const method = editingField ? "patch" : "post";
+      const response = await axios[method](url, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.data.status === "success") {
-        setFields([...fields, response.data.data]);
-        console.log("Novo campo adicionado:", response.data.data);
-        setName("");
-        setLocation("");
-        setType("");
-        setHourlyRate("");
-        setModalOpen(false);
-        Alert.alert("Sucesso", "Campo adicionado com sucesso.");
-      } else {
-        Alert.alert("Erro", "Não foi possível adicionar o campo.");
-      }
-    } catch (error) {
-      console.error("Erro ao adicionar campo:", error);
-      Alert.alert("Erro", "Não foi possível adicionar o campo.");
-    }
-  };
-
-  // Atualizar dados do campo
-  const updateField = async () => {
-    if (!name || !location || !type || !hourlyRate) {
-      Alert.alert("Erro", "Todos os campos são obrigatórios.");
-      return;
-    }
-
-    try {
-      const hourlyRateNumber = parseFloat(
-        hourlyRate.replace(",", ".").replace("R$", "")
-      );
-      const token = await AsyncStorage.getItem("TOKEN");
-      if (!token) {
-        Alert.alert("Erro", "Token de autenticação não encontrado.");
-        return;
-      }
-
-      const response = await axios.patch(
-        `${api_url}/fields/${editingField.id}`,
-        {
-          name,
-          location,
-          type,
-          hourly_rate: hourlyRateNumber,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      });
 
       if (response.data.status === "success") {
         setFields(
-          fields.map((field) =>
-            field.id === editingField.id ? response.data.data : field
-          )
+          editingField
+            ? fields.map((field) =>
+                field.id === editingField.id ? response.data.data : field
+              )
+            : [...fields, response.data.data]
         );
-        console.log("Campo atualizado:", response.data.data);
         setName("");
         setLocation("");
         setType("");
         setHourlyRate("");
+        setImages([]);
         setModalOpen(false);
         setEditingField(null);
-        Alert.alert("Sucesso", "Campo atualizado com sucesso.");
-      } else {
-        Alert.alert("Erro", "Não foi possível atualizar o campo.");
-      }
-    } catch (error) {
-      console.error(
-        "Erro ao atualizar campo:",
-        error.response || error.message
-      );
-      if (error.response && error.response.status === 403) {
         Alert.alert(
-          "Erro de permissão",
-          "Você não tem permissão para esta ação."
+          "Sucesso",
+          `Campo ${editingField ? "atualizado" : "adicionado"} com sucesso.`
         );
       } else {
-        Alert.alert("Erro", "Não foi possível atualizar o campo.");
+        Alert.alert("Erro", "Não foi possível salvar o campo.");
       }
+    } catch (error) {
+      console.error("Erro ao salvar campo:", error);
+      Alert.alert("Erro", "Não foi possível salvar o campo.");
     }
   };
 
   const deleteField = async (fieldId) => {
-    console.log("deletar");
     Alert.alert(
       "Confirmação",
       "Você tem certeza que deseja excluir este campo?",
@@ -175,13 +135,6 @@ const Campos = () => {
           onPress: async () => {
             try {
               const token = await AsyncStorage.getItem("TOKEN");
-              if (!token) {
-                console.log("Token não encontrado");
-                return;
-              }
-
-              console.log("Token de autenticação:", token);
-
               const response = await axios.delete(
                 `${api_url}/fields/${fieldId}`,
                 {
@@ -192,17 +145,13 @@ const Campos = () => {
               );
 
               if (response.status === 200) {
-                console.log("Campo deletado com sucesso");
-                Alert.alert("Campo deletado com sucesso");
+                Alert.alert("Sucesso", "Campo deletado com sucesso");
                 await fetchFields();
               } else {
-                console.log("Falha ao deletar o campo", response.data);
+                console.error("Falha ao deletar o campo", response.data);
               }
             } catch (error) {
-              console.log(
-                "Erro ao deletar o campo",
-                error.response || error.message
-              );
+              console.error("Erro ao deletar o campo", error);
             }
           },
         },
@@ -217,30 +166,99 @@ const Campos = () => {
     setType(field.type);
     setHourlyRate(field.hourly_rate.toString());
     setEditingField(field);
+    setImages(field.images || []);
     setModalOpen(true);
   };
 
-  const handleSaveField = () => {
-    if (editingField) {
-      updateField();
-    } else {
-      addField();
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImages((prevImages) => [...prevImages, result.assets[0]]);
     }
   };
 
+  const removeImage = (index) => {
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
+
+  const renderItem = ({ item }) => (
+    <View style={styles.fieldItem}>
+      <Carousel
+        autoPlay
+        data={item.images || []}
+        renderItem={({ item: image }) => {
+          const imageUrl = `${api_url}/${image.path}`.replace(
+            "api/v1/",
+            "public/"
+          );
+          return (
+            <TouchableOpacity
+              onPress={() => setSelectedImage(imageUrl)}
+              style={styles.imageContainer}
+            >
+              <Image
+                source={{ uri: imageUrl }}
+                style={styles.image}
+                onError={() => handleImageError(image.id)}
+              />
+            </TouchableOpacity>
+          );
+        }}
+        width={width - 40}
+        height={200}
+        style={styles.imageContainer}
+        loop
+      />
+      <View style={styles.fieldTextContainer}>
+        <Text style={styles.fieldText}>
+          <Text style={styles.fieldLabel}>Nome:</Text> {item.name}
+        </Text>
+        <Text style={styles.fieldText}>
+          <Text style={styles.fieldLabel}>Localização:</Text> {item.location}
+        </Text>
+        <Text style={styles.fieldText}>
+          <Text style={styles.fieldLabel}>Modalidade:</Text> {item.type}
+        </Text>
+        <Text style={styles.fieldText}>
+          <Text style={styles.fieldLabel}>Valor da Hora:</Text> R${" "}
+          {item.hourly_rate}
+        </Text>
+      </View>
+      <View style={styles.iconContainer}>
+        <Pressable
+          style={styles.iconButton}
+          onPress={() => openEditModal(item)}
+        >
+          <Icon name="edit" type="feather" color="#007BFF" />
+        </Pressable>
+        <Pressable
+          style={styles.iconButton}
+          onPress={() => deleteField(item.id)}
+        >
+          <Icon name="trash" type="feather" color="#FF0000" />
+        </Pressable>
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Lista de Campos</Text>
+      <Text style={styles.title}>Campos</Text>
 
       <View style={styles.searchContainer}>
         <TextInput
-          placeholder="Localizar campo..."
+          placeholder="Buscar campo..."
           style={styles.searchInput}
-          onChangeText={(text) => setSearchQuery(text)}
+          onChangeText={setSearchQuery}
         />
-
         <Pressable style={styles.addButton} onPress={() => setModalOpen(true)}>
-          <Text style={styles.addButtonText}>Adicionar campo</Text>
+          <Text style={styles.addButtonText}>Adicionar Campo</Text>
         </Pressable>
       </View>
 
@@ -248,49 +266,13 @@ const Campos = () => {
         style={styles.list}
         data={filteredFields}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.fieldItem}>
-            <View style={styles.fieldTextContainer}>
-              <Text style={styles.fieldText}>
-                Nome: <Text style={styles.descriptionItens}>{item.name}</Text>
-              </Text>
-              <Text style={styles.fieldText}>
-                Localização:{" "}
-                <Text style={styles.descriptionItens}>{item.location}</Text>
-              </Text>
-              <Text style={styles.fieldText}>
-                Modalidade:{" "}
-                <Text style={styles.descriptionItens}>{item.type}</Text>
-              </Text>
-              <Text style={styles.fieldText}>
-                Valor da Hora:{" "}
-                <Text style={styles.descriptionItens}>
-                  R$ {item.hourly_rate}
-                </Text>
-              </Text>
-            </View>
-            <View style={styles.iconContainer}>
-              <Pressable
-                style={styles.iconButton}
-                onPress={() => openEditModal(item)}
-              >
-                <Feather name="edit" size={24} color="blue" />
-              </Pressable>
-              <Pressable
-                style={styles.iconButton}
-                onPress={() => deleteField(item.id)}
-              >
-                <Entypo name="trash" size={24} color="#FF0000" />
-              </Pressable>
-            </View>
-          </View>
-        )}
+        renderItem={renderItem}
       />
 
       <Modal
         visible={modalOpen}
         animationType="slide"
-        transparent={true}
+        transparent
         onRequestClose={() => {
           setModalOpen(false);
           setEditingField(null);
@@ -298,10 +280,17 @@ const Campos = () => {
           setLocation("");
           setType("");
           setHourlyRate("");
+          setImages([]);
         }}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
+            <Pressable
+              style={styles.closeButton}
+              onPress={() => setModalOpen(false)}
+            >
+              <Text style={styles.closeButtonText}>×</Text>
+            </Pressable>
             <Text style={styles.modalTitle}>
               {editingField ? "Editar Campo" : "Adicionar Campo"}
             </Text>
@@ -318,40 +307,68 @@ const Campos = () => {
               style={styles.input}
             />
             <TextInput
-              placeholder="Modalidade do campo"
+              placeholder="Modalidade"
               value={type}
               onChangeText={setType}
               style={styles.input}
             />
-
             <ValorHora
               value={hourlyRate}
-              onChangeText={setHourlyRate}
+              onChange={setHourlyRate}
               style={styles.input}
             />
-
-            <View style={styles.modalButtonContainer}>
-              <Pressable
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => {
-                  setModalOpen(false);
-                  setEditingField(null);
-                  setName("");
-                  setLocation("");
-                  setType("");
-                  setHourlyRate("");
-                }}
-              >
-                <Text style={styles.cancelButtonText}>Cancelar</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.modalButton, styles.saveButton]}
-                onPress={handleSaveField}
-              >
-                <Text style={styles.saveButtonText}>Salvar</Text>
-              </Pressable>
-            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.imagesContainer}
+            >
+              {images.map((image, index) => (
+                <Pressable
+                  key={index}
+                  onPress={() => setSelectedImage(image.uri)}
+                  style={styles.imagePreview}
+                >
+                  <Image source={{ uri: image.uri }} style={styles.image} />
+                  <Pressable
+                    style={styles.removeImageButton}
+                    onPress={() => removeImage(index)}
+                  >
+                    <Text style={styles.removeImageText}>×</Text>
+                  </Pressable>
+                </Pressable>
+              ))}
+            </ScrollView>
+            <RNButton
+              title="Escolher Imagens"
+              onPress={pickImage}
+              icon={<Icon name="image" type="feather" color="#fff" />}
+              buttonStyle={styles.uploadButton}
+            />
+            <Pressable style={styles.saveButton} onPress={handleSaveField}>
+              <Text style={styles.saveButtonText}>
+                {editingField ? "Atualizar Campo" : "Adicionar Campo"}
+              </Text>
+            </Pressable>
           </View>
+        </View>
+      </Modal>
+
+      {/* Modal para imagem ampliada */}
+      <Modal
+        visible={!!selectedImage}
+        transparent
+        onRequestClose={() => setSelectedImage(null)}
+      >
+        <View style={styles.imageModalContainer}>
+          <Image source={{ uri: selectedImage }} style={styles.imageModal} />
+          <Pressable
+            style={styles.imageCloseButton}
+            onPress={() => setSelectedImage(null)}
+          >
+            <Text style={styles.imageCloseButtonText}>
+              <AntDesign name="closecircle" size={36} color="#fff" />
+            </Text>
+          </Pressable>
         </View>
       </Modal>
     </SafeAreaView>
@@ -361,136 +378,181 @@ const Campos = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    // backgroundColor: "#fff",
-    backgroundColor: "#E8F4F8",
+    backgroundColor: "#F0F0F0",
+    padding: 20,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-    alignSelf: "center",
+    fontSize: 28,
+    fontWeight: "600",
+    marginBottom: 20,
+    color: "#333",
   },
   searchContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 20,
   },
   searchInput: {
     flex: 1,
+    borderColor: "#E0E0E0",
     borderWidth: 1,
-    borderColor: "#ccc",
-    backgroundColor: "#fff",
-    borderRadius: 5,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  searchIcon: {
-    marginLeft: 10,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: "#FFF",
   },
   addButton: {
-    backgroundColor: "#3D3DDA",
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-    marginLeft: 10,
+    backgroundColor: "#007BFF",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    justifyContent: "center",
+    alignItems: "center",
   },
   addButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 14,
+    color: "#FFF",
+    fontSize: 16,
   },
   list: {
-    marginTop: 10,
+    flex: 1,
   },
   fieldItem: {
-    flexDirection: "row",
-    alignItems: "center",
-
-    justifyContent: "space-between",
-    backgroundColor: "#fff",
-
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
+    backgroundColor: "#FFF",
+    borderRadius: 8,
+    marginBottom: 15,
+    padding: 15,
+    elevation: 1,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
-
+  image: {
+    width: width - 40,
+    height: 200,
+    borderRadius: 8,
+    resizeMode: "cover",
+  },
+  imageContainer: {
+    marginBottom: 15,
+  },
   fieldTextContainer: {
-    flex: 1,
-    marginRight: 10,
+    marginBottom: 10,
   },
   fieldText: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#3D5A80",
-    marginRight: 10,
+    color: "#333",
+  },
+  fieldLabel: {
+    fontWeight: "500",
+    color: "#555",
   },
   iconContainer: {
     flexDirection: "row",
+    justifyContent: "space-between",
   },
   iconButton: {
-    marginLeft: 10,
+    padding: 8,
   },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
+    backgroundColor: "#FFF",
     padding: 20,
-    width: "80%",
-    alignItems: "center",
+    borderRadius: 8,
+    width: "90%",
+    position: "relative",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "#F8F8F8",
+    borderRadius: 50,
+    // padding: 5,
+  },
+  closeButtonText: {
+    fontSize: 36,
+    color: "#333",
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
+    fontWeight: "600",
+    marginBottom: 15,
+    color: "#333",
   },
   input: {
-    width: "100%",
+    borderColor: "#E0E0E0",
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginBottom: 10,
-    // textTransform: "capitalize",
-  },
-  modalButtonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-  },
-  modalButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-    marginTop: 10,
-    width: "48%",
-    alignItems: "center",
-  },
-  cancelButton: {
-    backgroundColor: "#ccc",
-  },
-  cancelButtonText: {
-    color: "#000",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 15,
+    fontSize: 16,
+    backgroundColor: "#FFF",
   },
   saveButton: {
-    backgroundColor: "#3D3DDA",
+    backgroundColor: "#28a745",
+    borderRadius: 8,
+    paddingVertical: 12,
+    justifyContent: "center",
+    alignItems: "center",
   },
   saveButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: "#FFF",
+    fontSize: 16,
   },
-  descriptionItens: {
-    fontWeight: "bold",
-    color: "#000",
+  imagesContainer: {
+    marginVertical: 15,
+  },
+  imagePreview: {
+    position: "relative",
+    marginRight: 10,
+  },
+  removeImageButton: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: "#FF0000",
+    borderRadius: 12,
+    padding: 6,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  removeImageText: {
+    color: "#FFF",
+    fontSize: 16,
+  },
+  uploadButton: {
+    backgroundColor: "#007BFF",
+    borderRadius: 8,
+    paddingVertical: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  imageModalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+  },
+  imageModal: {
+    width: "90%",
+    height: "80%",
+    resizeMode: "contain",
+  },
+  imageCloseButton: {
+    position: "absolute",
+    top: 20,
+    right: 10,
+    // backgroundColor: "#000",
+    borderRadius: 50,
+    padding: 5,
+  },
+  imageCloseButtonText: {
+    fontSize: 24,
+    color: "#333",
   },
 });
 
