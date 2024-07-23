@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, TextInput, StyleSheet, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useForm, Controller } from "react-hook-form";
 
 export const CustomPasswordInput = ({
   value,
@@ -19,6 +20,7 @@ export const CustomPasswordInput = ({
         value={value}
         onChangeText={onChangeText}
         onBlur={onBlur}
+        autoComplete="password"
       />
       <Pressable
         onPress={() => setPasswordVisible(!isPasswordVisible)}
@@ -38,14 +40,16 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-
     marginVertical: 10,
     width: "90%",
   },
   input: {
     flex: 1,
-    height: 20,
+    height: 40,
     fontSize: 16,
+    borderColor: "#ccc",
+
+    paddingLeft: 10,
   },
   iconContainer: {
     marginLeft: 10,
