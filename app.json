@@ -7,9 +7,12 @@
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "scheme": "SportReserve",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "splash": {
-      // "image": "./assets/ball.json",
       "resizeMode": "contain",
       "backgroundColor": "#E8F4F8"
     },
@@ -28,6 +31,9 @@
       "logo.png": "./assets/logo.png",
       "bundle": "metro"
     },
-    "plugins": ["expo-router"]
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ]
   }
 }
