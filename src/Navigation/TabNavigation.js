@@ -72,7 +72,7 @@ export default function TabNavigator() {
       />
       {isAdmin ? (
         <>
-          <Tab.Screen
+          {/* <Tab.Screen
             name="AgendarHorario"
             component={AgendarHorario}
             options={{
@@ -85,7 +85,7 @@ export default function TabNavigator() {
                 />
               ),
             }}
-          />
+          /> */}
           <Tab.Screen
             name="ListaCampos"
             component={ListaCampos}
