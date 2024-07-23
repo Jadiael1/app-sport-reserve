@@ -108,7 +108,8 @@ export default function AdminHome() {
           {format(parseISO(item.end_time), "HH:mm")}
         </Text>
         <Text style={styles.horarioText}>
-          <FontAwesome name="user" size={24} color="#007AFF" /> {item.user.name}
+          <FontAwesome name="user" size={24} color="#007AFF" />{" "}
+          <Text style={styles.nameUser}>{item.user.name}</Text>
         </Text>
         <View style={styles.statusContainer}>
           <Icon name={icon} size={20} color={color} />
@@ -132,7 +133,7 @@ export default function AdminHome() {
       ) : (
         <>
           <Text style={styles.textHorarioDia}>
-            Horários de hoje{" "}
+            Reservas do dia{" "}
             <Text style={styles.TextDateToday}>
               {format(currentDate, "dd/MM")}
             </Text>
@@ -164,7 +165,6 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    // justifyContent: "center",
     paddingVertical: 50,
     backgroundColor: "#007AFF",
     borderBottomRightRadius: 30,
@@ -173,8 +173,6 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 24,
     fontWeight: "bold",
-    // marginBottom: 20,
-
     color: "#fff",
   },
   textHorarioDia: {
@@ -192,7 +190,6 @@ const styles = StyleSheet.create({
   },
   horarioText: {
     fontSize: 16,
-
   },
   TextDateToday: {
     fontWeight: "bold",
@@ -216,6 +213,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     alignSelf: "center",
     marginTop: 20,
+  },
+  nameUser: {
+    fontWeight: "bold",
+    fontSize: 18,
   },
   flatListContainer: {
     paddingHorizontal: 10,
