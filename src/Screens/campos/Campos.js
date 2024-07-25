@@ -20,7 +20,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Carousel from "@kaceycleveland/react-native-reanimated-carousel";
 import * as ImagePicker from "expo-image-picker";
-import { Button as RNButton, Icon } from "react-native-elements";
 import { AntDesign } from "@expo/vector-icons";
 
 const fallbackImage = "https://placehold.co/600x400";
@@ -56,7 +55,6 @@ const Campos = () => {
   const filteredFields = fields.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
   const handleSaveField = async () => {
     if (!name || !location || !type || !hourlyRate) {
       Alert.alert("Erro", "Todos os campos são obrigatórios.");
@@ -64,20 +62,39 @@ const Campos = () => {
     }
 
     try {
+      // Verificar e ajustar imagens
+      const validImages = images.filter((image) => {
+        const allowedTypes = ["image/jpeg", "image/png"];
+        return allowedTypes.includes(image.type);
+      });
+      console.log(validImages);
+      if (validImages.length !== images.length) {
+        Alert.alert(
+          "Erro",
+          "Todos os arquivos devem ser imagens com tipo: jpg, jpeg, png."
+        );
+        return;
+      }
+
+      console.log("Imagens válidas:", validImages);
+
       const hourlyRateNumber = parseFloat(
         hourlyRate.replace(",", ".").replace("R$", "")
       );
       const token = await AsyncStorage.getItem("TOKEN");
+      console.log("Token:", token);
+
       const formData = new FormData();
       formData.append("name", name);
       formData.append("location", location);
       formData.append("type", type);
-      formData.append("hourly_rate", hourlyRateNumber);
-      images.forEach((image, index) => {
+      formData.append("hourly_rate", hourlyRate);
+
+      validImages.forEach((image, index) => {
         formData.append(`images[${index}]`, {
           uri: image.uri,
-          type: "image/jpeg",
-          name: `image${index}.jpg`,
+          type: image.type,
+          name: `image${index}.${image.type.split("/")[1]}`,
         });
       });
 
@@ -92,7 +109,8 @@ const Campos = () => {
         },
       });
 
-      if (response.data.status === "success") {
+      if (response.status === 200 || response.status === 201) {
+        console.log("Campo salvo com sucesso:", response.data.data);
         setFields(
           editingField
             ? fields.map((field) =>
@@ -121,43 +139,23 @@ const Campos = () => {
   };
 
   const deleteField = async (fieldId) => {
-    Alert.alert(
-      "Confirmação",
-      "Você tem certeza que deseja excluir este campo?",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
+    try {
+      const token = await AsyncStorage.getItem("TOKEN");
+      const response = await axios.delete(`${api_url}/fields/${fieldId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          text: "Excluir",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const token = await AsyncStorage.getItem("TOKEN");
-              const response = await axios.delete(
-                `${api_url}/fields/${fieldId}`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                }
-              );
+      });
 
-              if (response.status === 200) {
-                Alert.alert("Sucesso", "Campo deletado com sucesso");
-                await fetchFields();
-              } else {
-                console.error("Falha ao deletar o campo", response.data);
-              }
-            } catch (error) {
-              console.error("Erro ao deletar o campo", error);
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    );
+      if (response.status === 200) {
+        Alert.alert("Sucesso", "Campo deletado com sucesso");
+        await fetchFields();
+      } else {
+        console.error("Falha ao deletar o campo", response.data);
+      }
+    } catch (error) {
+      console.error("Erro ao deletar o campo", error);
+    }
   };
 
   const openEditModal = (field) => {
@@ -166,11 +164,31 @@ const Campos = () => {
     setType(field.type);
     setHourlyRate(field.hourly_rate.toString());
     setEditingField(field);
-    setImages(field.images || []);
+    setImages(
+      field.images.map((image) => ({
+        ...image,
+        uri: `${api_url}/${image.path}`.replace("api/v1/", "public/"),
+      })) || []
+    );
+    setModalOpen(true);
+  };
+
+  const openCreateModal = () => {
+    setName("");
+    setLocation("");
+    setType("");
+    setHourlyRate("");
+    setImages([]);
+    setEditingField(null);
     setModalOpen(true);
   };
 
   const pickImage = async () => {
+    if (images.length >= 5) {
+      Alert.alert("Erro", "Você só pode adicionar no máximo 5 imagens.");
+      return;
+    }
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -191,6 +209,7 @@ const Campos = () => {
     <View style={styles.fieldItem}>
       <Carousel
         autoPlay
+        autoPlayInterval={3000}
         data={item.images || []}
         renderItem={({ item: image }) => {
           const imageUrl = `${api_url}/${image.path}`.replace(
@@ -198,20 +217,20 @@ const Campos = () => {
             "public/"
           );
           return (
-            <TouchableOpacity
+            <Pressable
               onPress={() => setSelectedImage(imageUrl)}
               style={styles.imageContainer}
             >
               <Image
                 source={{ uri: imageUrl }}
-                style={styles.image}
+                style={styles.carouselImage}
                 onError={() => handleImageError(image.id)}
               />
-            </TouchableOpacity>
+            </Pressable>
           );
         }}
         width={width - 40}
-        height={200}
+        height={160}
         style={styles.imageContainer}
         loop
       />
@@ -235,13 +254,13 @@ const Campos = () => {
           style={styles.iconButton}
           onPress={() => openEditModal(item)}
         >
-          <Icon name="edit" type="feather" color="#007BFF" />
+          <AntDesign name="edit" size={24} color="#007BFF" />
         </Pressable>
         <Pressable
           style={styles.iconButton}
           onPress={() => deleteField(item.id)}
         >
-          <Icon name="trash" type="feather" color="#FF0000" />
+          <AntDesign name="delete" size={24} color="#FF0000" />
         </Pressable>
       </View>
     </View>
@@ -249,16 +268,17 @@ const Campos = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Campos</Text>
+      <Text style={styles.title}>Minhas arenas</Text>
 
       <View style={styles.searchContainer}>
         <TextInput
-          placeholder="Buscar campo..."
+          placeholder="Buscar arena..."
           style={styles.searchInput}
           onChangeText={setSearchQuery}
         />
-        <Pressable style={styles.addButton} onPress={() => setModalOpen(true)}>
-          <Text style={styles.addButtonText}>Adicionar Campo</Text>
+        <Pressable style={styles.addButton} onPress={openCreateModal}>
+          <AntDesign name="plus" size={24} color="#FFF" />
+          <Text style={styles.addButtonText}>Adicionar arena</Text>
         </Pressable>
       </View>
 
@@ -271,8 +291,8 @@ const Campos = () => {
 
       <Modal
         visible={modalOpen}
+        transparent={true}
         animationType="slide"
-        transparent
         onRequestClose={() => {
           setModalOpen(false);
           setEditingField(null);
@@ -285,92 +305,112 @@ const Campos = () => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Pressable
+            <TouchableOpacity
               style={styles.closeButton}
-              onPress={() => setModalOpen(false)}
+              onPress={() => {
+                setModalOpen(false);
+                setEditingField(null);
+                setName("");
+                setLocation("");
+                setType("");
+                setHourlyRate("");
+                setImages([]);
+              }}
             >
-              <Text style={styles.closeButtonText}>×</Text>
-            </Pressable>
+              <AntDesign name="close" size={24} color="#007BFF" />
+            </TouchableOpacity>
             <Text style={styles.modalTitle}>
-              {editingField ? "Editar Campo" : "Adicionar Campo"}
+              {editingField ? "Editar" : "Adicionar"} Campo
             </Text>
-            <TextInput
-              placeholder="Nome do campo"
-              value={name}
-              onChangeText={setName}
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Localização"
-              value={location}
-              onChangeText={setLocation}
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Modalidade"
-              value={type}
-              onChangeText={setType}
-              style={styles.input}
-            />
-            <ValorHora
-              value={hourlyRate}
-              onChange={setHourlyRate}
-              style={styles.input}
-            />
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.imagesContainer}
-            >
-              {images.map((image, index) => (
-                <Pressable
-                  key={index}
-                  onPress={() => setSelectedImage(image.uri)}
-                  style={styles.imagePreview}
-                >
-                  <Image source={{ uri: image.uri }} style={styles.image} />
-                  <Pressable
-                    style={styles.removeImageButton}
-                    onPress={() => removeImage(index)}
+
+            <ScrollView>
+              <TextInput
+                placeholder="Nome"
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+              />
+              <TextInput
+                placeholder="Localização"
+                style={styles.input}
+                value={location}
+                onChangeText={setLocation}
+              />
+              <TextInput
+                placeholder="Modalidade"
+                style={styles.input}
+                value={type}
+                onChangeText={setType}
+              />
+              <ValorHora
+                placeholder="Valor da Hora"
+                style={styles.input}
+                value={hourlyRate}
+                onChangeText={setHourlyRate}
+              />
+
+              <Text style={styles.sectionTitle}>Imagens</Text>
+              <View style={styles.imageList}>
+                {images.map((image, index) => (
+                  <View key={index} style={styles.imageWrapper}>
+                    <Image
+                      source={{ uri: image.uri }}
+                      style={styles.image}
+                      resizeMode="cover"
+                    />
+                    <TouchableOpacity
+                      style={styles.removeImageButton}
+                      onPress={() => removeImage(index)}
+                    >
+                      <AntDesign name="close" size={20} color="#FFF" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                {images.length < 5 && (
+                  <TouchableOpacity
+                    style={styles.uploadButton}
+                    onPress={pickImage}
                   >
-                    <Text style={styles.removeImageText}>×</Text>
-                  </Pressable>
-                </Pressable>
-              ))}
+                    <AntDesign name="camerao" size={30} color="#007BFF" />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleSaveField}
+              >
+                <Text style={styles.saveButtonText}>
+                  {editingField ? "Salvar Alterações" : "Adicionar Campo"}
+                </Text>
+              </TouchableOpacity>
             </ScrollView>
-            <RNButton
-              title="Escolher Imagens"
-              onPress={pickImage}
-              icon={<Icon name="image" type="feather" color="#fff" />}
-              buttonStyle={styles.uploadButton}
-            />
-            <Pressable style={styles.saveButton} onPress={handleSaveField}>
-              <Text style={styles.saveButtonText}>
-                {editingField ? "Atualizar Campo" : "Adicionar Campo"}
-              </Text>
-            </Pressable>
           </View>
         </View>
       </Modal>
 
-      {/* Modal para imagem ampliada */}
-      <Modal
-        visible={!!selectedImage}
-        transparent
-        onRequestClose={() => setSelectedImage(null)}
-      >
-        <View style={styles.imageModalContainer}>
-          <Image source={{ uri: selectedImage }} style={styles.imageModal} />
-          <Pressable
-            style={styles.imageCloseButton}
+      {selectedImage && (
+        <Modal visible={true} transparent={true}>
+          <TouchableOpacity
+            style={styles.imagePreviewContainer}
             onPress={() => setSelectedImage(null)}
           >
-            <Text style={styles.imageCloseButtonText}>
-              <AntDesign name="closecircle" size={36} color="#fff" />
-            </Text>
-          </Pressable>
-        </View>
-      </Modal>
+            <View style={styles.imagePreviewWrapper}>
+              <Image
+                source={{ uri: selectedImage }}
+                style={styles.imagePreview}
+                resizeMode="contain"
+              />
+              <TouchableOpacity
+                style={styles.closePreviewButton}
+                onPress={() => setSelectedImage(null)}
+              >
+                <AntDesign name="close" size={30} color="#FFF" />
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 };
@@ -378,72 +418,65 @@ const Campos = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F0F0F0",
-    padding: 20,
+    padding: 16,
+    backgroundColor: "#f8f9fa",
   },
   title: {
-    fontSize: 28,
-    fontWeight: "600",
-    marginBottom: 20,
+    fontSize: 24,
+    fontWeight: "bold",
     color: "#333",
+    marginBottom: 16,
   },
   searchContainer: {
     flexDirection: "row",
-    marginBottom: 20,
+    alignItems: "center",
+    marginBottom: 16,
   },
   searchInput: {
     flex: 1,
-    borderColor: "#E0E0E0",
+    height: 40,
+    borderColor: "#ced4da",
     borderWidth: 1,
     borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: "#FFF",
+    paddingHorizontal: 8,
+    backgroundColor: "#fff",
   },
   addButton: {
-    backgroundColor: "#007BFF",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    justifyContent: "center",
+    flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#007BFF",
+    padding: 10,
+    borderRadius: 8,
+    marginLeft: 8,
   },
   addButtonText: {
-    color: "#FFF",
-    fontSize: 16,
+    color: "#fff",
+    marginLeft: 8,
   },
   list: {
     flex: 1,
   },
   fieldItem: {
-    backgroundColor: "#FFF",
+    backgroundColor: "#fff",
     borderRadius: 8,
-    marginBottom: 15,
-    padding: 15,
-    elevation: 1,
+    padding: 16,
+    marginBottom: 16,
     shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
-  },
-  image: {
-    width: width - 40,
-    height: 200,
-    borderRadius: 8,
-    resizeMode: "cover",
-  },
-  imageContainer: {
-    marginBottom: 15,
+    shadowRadius: 8,
+    elevation: 2,
   },
   fieldTextContainer: {
-    marginBottom: 10,
+    marginVertical: 16,
   },
   fieldText: {
     fontSize: 16,
+    marginBottom: 4,
     color: "#333",
   },
   fieldLabel: {
-    fontWeight: "500",
-    color: "#555",
+    fontWeight: "bold",
   },
   iconContainer: {
     flexDirection: "row",
@@ -459,100 +492,115 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: "#FFF",
-    padding: 20,
-    borderRadius: 8,
     width: "90%",
-    position: "relative",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 16,
   },
   closeButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "#F8F8F8",
-    borderRadius: 50,
-    // padding: 5,
+    alignSelf: "flex-end",
   },
   closeButtonText: {
-    fontSize: 36,
-    color: "#333",
+    fontSize: 24,
+    color: "#007BFF",
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 15,
+    fontWeight: "bold",
     color: "#333",
+    marginBottom: 16,
   },
   input: {
-    borderColor: "#E0E0E0",
+    height: 40,
+    borderColor: "#ced4da",
     borderWidth: 1,
     borderRadius: 8,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 16,
-    backgroundColor: "#FFF",
+    paddingHorizontal: 8,
+    marginBottom: 16,
+    backgroundColor: "#fff",
   },
-  saveButton: {
-    backgroundColor: "#28a745",
-    borderRadius: 8,
-    paddingVertical: 12,
-    justifyContent: "center",
-    alignItems: "center",
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 8,
   },
-  saveButtonText: {
-    color: "#FFF",
-    fontSize: 16,
+  imageList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
-  imagesContainer: {
-    marginVertical: 15,
-  },
-  imagePreview: {
+  imageWrapper: {
     position: "relative",
-    marginRight: 10,
+    marginBottom: 8,
+    marginRight: 8,
+  },
+  image: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ced4da",
   },
   removeImageButton: {
     position: "absolute",
-    top: 5,
-    right: 5,
-    backgroundColor: "#FF0000",
+    top: -8,
+    right: -6,
+    backgroundColor: "#000",
     borderRadius: 12,
-    padding: 6,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  removeImageText: {
-    color: "#FFF",
-    fontSize: 16,
+    padding: 2,
   },
   uploadButton: {
-    backgroundColor: "#007BFF",
+    width: 80,
+    height: 80,
     borderRadius: 8,
-    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: "#ced4da",
     justifyContent: "center",
     alignItems: "center",
   },
-  imageModalContainer: {
+  saveButton: {
+    backgroundColor: "#007BFF",
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 16,
+    alignItems: "center",
+  },
+  saveButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  imagePreviewContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.8)",
   },
-  imageModal: {
+  imagePreviewWrapper: {
+    position: "relative",
     width: "90%",
-    height: "80%",
-    resizeMode: "contain",
+    height: "90%",
   },
-  imageCloseButton: {
+  imagePreview: {
+    width: "100%",
+    height: "100%",
+  },
+  closePreviewButton: {
     position: "absolute",
-    top: 20,
-    right: 10,
-    // backgroundColor: "#000",
-    borderRadius: 50,
-    padding: 5,
+    top: 16,
+    right: 16,
+    backgroundColor: "#000",
+    borderRadius: 24,
+    padding: 8,
   },
-  imageCloseButtonText: {
-    fontSize: 24,
-    color: "#333",
+  imageContainer: {
+    alignItems: "center",
+  },
+  carouselImage: {
+    width: "100%",
+    height: 160,
+    borderRadius: 8,
+    resizeMode: "cover",
   },
 });
 

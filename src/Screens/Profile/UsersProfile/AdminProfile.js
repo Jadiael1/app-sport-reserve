@@ -19,7 +19,7 @@ const AdminDashboard = () => {
     { id: "1", title: "Relatório de Usuários", icon: "people" },
     { id: "2", title: "Relatório de Horários", icon: "time" },
     { id: "3", title: "Relatório de Pagamentos", icon: "card" },
-    { id: "4", title: "Relatório de Cancelamentos", icon: "close-circle" },
+    // { id: "4", title: "Relatório de Cancelamentos", icon: "close-circle" },
   ];
 
   const handleReportClick = (report) => {
@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    marginTop: 30,
   },
   profileContainer: {
     backgroundColor: "#f0f0f0",
