@@ -12,6 +12,7 @@ import {
   ScrollView,
   Dimensions,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import axios from "axios";
 import { ValorHora } from "../../components/Inputs/ValorHora";
@@ -31,11 +32,13 @@ const Campos = () => {
   const [location, setLocation] = useState("");
   const [type, setType] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingField, setEditingField] = useState(null);
   const [images, setImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchFields();
@@ -51,90 +54,360 @@ const Campos = () => {
       Alert.alert("Erro", "Não foi possível buscar os campos.");
     }
   };
-
-  const filteredFields = fields.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredFields = fields.filter(
+    (field) =>
+      field.name && field.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  const handleSaveField = async () => {
-    if (!name || !location || !type || !hourlyRate) {
-      Alert.alert("Erro", "Todos os campos são obrigatórios.");
-      return;
+
+  //  const handleSaveField = async () => {
+  //   if (!name || !location || !type || !hourlyRate) {
+  //     Alert.alert("Erro", "Todos os campos são obrigatórios.");
+  //     return;
+  //   }
+
+  //   try {
+  //     const validImages = images.filter((image) => {
+  //       const allowedTypes = ["image/jpeg", "image/png"];
+  //       return allowedTypes.includes(image.type);
+  //     });
+
+  //     if (validImages.length !== images.length) {
+  //       Alert.alert(
+  //         "Erro",
+  //         "Todos os arquivos devem ser imagens com tipo: jpg, jpeg, png."
+  //       );
+  //       return;
+  //     }
+
+  //     const hourlyRateNumber = parseFloat(
+  //       hourlyRate.replace(",", ".").replace("R$", "").trim()
+  //     );
+
+  //     const token = await AsyncStorage.getItem("TOKEN");
+  //     if (!token) {
+  //       Alert.alert("Erro", "Token de autenticação não encontrado.");
+  //       return;
+  //     }
+
+  //     const formData = new FormData();
+  //     formData.append("name", name);
+  //     formData.append("location", location);
+  //     formData.append("type", type);
+  //     formData.append("hourly_rate", hourlyRateNumber.toString());
+
+  //     validImages.forEach((image, index) => {
+  //       formData.append(`images[${index}]`, {
+  //         uri: image.uri,
+  //         type: image.type,
+  //         name: `image${index}.${image.type.split("/")[1]}`,
+  //       });
+  //     });
+
+  //     const url = editingField
+  //       ? `${api_url}/fields/${editingField.id}`
+  //       : `${api_url}/fields`;
+  //     const method = editingField ? "PATCH" : "POST";
+
+  //     const response = await fetch(url, {
+  //       method,
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         "Content-Type": "multipart/form-data",
+  //       },
+  //       body: formData,
+  //     });
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       Alert.alert(
+  //         "Erro",
+  //         errorData.message || "Não foi possível salvar o campo."
+  //       );
+  //       return;
+  //     }
+
+  //     const data = await response.json();
+
+  //     Alert.alert(
+  //       "Sucesso",
+  //       `Campo ${editingField ? "atualizado" : "adicionado"} com sucesso.`
+  //     );
+  //     setFields(
+  //       editingField
+  //         ? fields.map((field) => (field.id === editingField.id ? data : field))
+  //         : [...fields, data]
+  //     );
+  //     setName("");
+  //     setLocation("");
+  //     setType("");
+  //     setHourlyRate("");
+  //     setImages([]);
+  //     setModalOpen(false);
+  //     setEditingField(null);
+  //   } catch (error) {
+  //     console.error("Erro ao salvar campo:", error);
+  //     Alert.alert("Erro", "Não foi possível salvar o campo.");
+  //   }
+  // };
+
+  const handleCreateField = async () => {
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("location", location);
+    formData.append("type", type);
+    formData.append(
+      "hourly_rate",
+      parseFloat(hourlyRate.replace(/[^\d.-]/g, ""))
+    );
+
+    // Adiciona imagens ao FormData
+    if (images) {
+      Array.from(images).forEach((image) => {
+        console.log("images", image);
+        formData.append("images[]", image);
+      });
     }
 
     try {
-      // Verificar e ajustar imagens
-      const validImages = images.filter((image) => {
-        const allowedTypes = ["image/jpeg", "image/png"];
-        return allowedTypes.includes(image.type);
+      const token = await AsyncStorage.getItem("TOKEN");
+      if (!token) {
+        console.error("Token não encontrado no AsyncStorage");
+        Alert.alert("Erro", "Token não encontrado.");
+        return;
+      }
+
+      console.log("Token recuperado:", token); // Log para verificar o token
+
+      console.log("Enviando requisição para:", `${api_url}/fields`); // Log para verificar a URL
+
+      const response = await fetch(`${api_url}/fields`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          // "Content-Type": "multipart/form-data", // Não defina Content-Type aqui; o navegador irá definir automaticamente
+        },
+        body: formData,
       });
-      console.log(validImages);
-      if (validImages.length !== images.length) {
+
+      const data = await response.json();
+      if (!response.ok) {
+        console.error("Erro ao criar campo:", data);
         Alert.alert(
-          "Erro",
-          "Todos os arquivos devem ser imagens com tipo: jpg, jpeg, png."
+          "Erro ao criar campo",
+          data.message || "Erro desconhecido."
         );
         return;
       }
 
-      console.log("Imagens válidas:", validImages);
+      console.log("Dados da resposta:", data);
+      Alert.alert("Campo criado com sucesso!");
 
-      const hourlyRateNumber = parseFloat(
-        hourlyRate.replace(",", ".").replace("R$", "")
-      );
-      const token = await AsyncStorage.getItem("TOKEN");
-      console.log("Token:", token);
+      // Atualiza as imagens se houver
+      if (images && images.length > 0) {
+        await handleStoreImage(images);
+      }
 
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("location", location);
-      formData.append("type", type);
-      formData.append("hourly_rate", hourlyRate);
+      setModalOpen(false);
+    } catch (error) {
+      console.error("Erro ao criar campo:", error);
+      Alert.alert("Erro ao criar campo", error.message || "Erro desconhecido.");
+    }
+  };
 
-      validImages.forEach((image, index) => {
+  const handleUpdateField = async (field) => {
+    if (!field || !field.id) {
+      console.log("Erro: ID do campo não definido");
+      return;
+    }
+
+    const hourlyRateNumber = parseFloat(
+      field.hourly_rate.replace(",", ".").replace("R$", "").trim()
+    );
+
+    const status =
+      field.status === "active" || field.status === "inactive"
+        ? field.status
+        : "inactive";
+
+    const formData = new FormData();
+    formData.append("_method", "PATCH");
+    formData.append("name", field.name);
+    formData.append("location", field.location);
+    formData.append("type", field.type);
+    formData.append("hourly_rate", hourlyRateNumber.toString());
+    formData.append("status", status);
+
+    if (field.images && field.images.length > 0) {
+      field.images.forEach((image, index) => {
         formData.append(`images[${index}]`, {
           uri: image.uri,
-          type: image.type,
-          name: `image${index}.${image.type.split("/")[1]}`,
+          type: image.type || "image/jpeg",
+          name: `image${index}.jpg`,
         });
       });
+    }
 
-      const url = editingField
-        ? `${api_url}/fields/${editingField.id}`
-        : `${api_url}/fields`;
-      const method = editingField ? "patch" : "post";
-      const response = await axios[method](url, formData, {
+    try {
+      const token = await AsyncStorage.getItem("TOKEN");
+      if (!token) {
+        console.log("Erro: token não encontrado");
+        return;
+      }
+
+      const response = await fetch(`${api_url}/fields/${field.id}`, {
+        method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
+          Accept: "application/json",
           "Content-Type": "multipart/form-data",
         },
+        body: formData,
       });
 
-      if (response.status === 200 || response.status === 201) {
-        console.log("Campo salvo com sucesso:", response.data.data);
-        setFields(
-          editingField
-            ? fields.map((field) =>
-                field.id === editingField.id ? response.data.data : field
-              )
-            : [...fields, response.data.data]
-        );
-        setName("");
-        setLocation("");
-        setType("");
-        setHourlyRate("");
-        setImages([]);
-        setModalOpen(false);
-        setEditingField(null);
-        Alert.alert(
-          "Sucesso",
-          `Campo ${editingField ? "atualizado" : "adicionado"} com sucesso.`
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert("Sucesso", "Arena atualizada com sucesso!");
+        setFields((prevFields) =>
+          prevFields.map((f) => (f.id === field.id ? data : f))
         );
       } else {
-        Alert.alert("Erro", "Não foi possível salvar o campo.");
+        Alert.alert(
+          "Erro",
+          data.message || "Não foi possível atualizar o campo."
+        );
       }
     } catch (error) {
-      console.error("Erro ao salvar campo:", error);
-      Alert.alert("Erro", "Não foi possível salvar o campo.");
+      console.log("Erro", error);
+      Alert.alert("Erro", "Não foi possível atualizar o campo.");
+    }
+  };
+
+  const handleUpdateImage = async (imageId, newImage) => {
+    if (!editingField) return;
+
+    const formData = new FormData();
+    formData.append("_method", "PATCH");
+    formData.append("images[]", {
+      uri: newImage.uri,
+      type: newImage.type,
+      name: newImage.uri.split("/").pop(),
+    });
+    formData.append("image_ids[]", imageId.toString());
+
+    try {
+      const token = await AsyncStorage.getItem("TOKEN");
+      const response = await fetch(`${api_url}/fields/${editingField.id}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "multipart/form-data",
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert("Sucesso", "Imagem atualizada com sucesso.");
+        setEditingField((prev) => ({
+          ...prev,
+          images: data.images,
+        }));
+      } else {
+        Alert.alert("Erro", data.message || "Falha ao atualizar a imagem.");
+      }
+    } catch (error) {
+      Alert.alert("Erro", "Falha ao atualizar a imagem.");
+    }
+  };
+
+  const handleDeleteImage = async (imageId) => {
+    if (!editingField) return;
+
+    const formData = new FormData();
+    formData.append("_method", "PATCH");
+    formData.append("image_ids[]", imageId);
+
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("TOKEN");
+      const response = await fetch(`${api_url}/fields/${editingField.id}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert("Sucesso", "Imagem excluída com sucesso.");
+
+        // Atualize o estado das imagens e do campo em edição
+        setImages((prevImages) =>
+          prevImages.filter((image) => image.id !== imageId)
+        );
+        setEditingField((prev) => ({
+          ...prev,
+          images: prev.images.filter((image) => image.id !== imageId),
+        }));
+      } else {
+        Alert.alert("Erro", data.message || "Falha ao excluir a imagem.");
+      }
+    } catch (error) {
+      Alert.alert("Erro", "Falha ao excluir a imagem.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageChange = (imageId) => async (event) => {
+    if (event.target.files && event.target.files[0]) {
+      await handleUpdateImage(imageId, event.target.files[0]);
+    }
+  };
+
+  const handleStoreImage = async (newImages) => {
+    if (!editingField) return;
+
+    const formData = new FormData();
+    formData.append("_method", "PATCH");
+    newImages.forEach((image) => {
+      formData.append("images[]", {
+        uri: image.uri,
+        type: image.type || "image/jpeg", // Verifica se o tipo está presente
+        name: image.uri.split("/").pop(),
+      });
+    });
+
+    try {
+      const token = await AsyncStorage.getItem("TOKEN");
+      const response = await fetch(`${api_url}/fields/${editingField.id}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+        body: formData,
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert("Sucesso", "Imagens atualizadas com sucesso.");
+        setEditingField((prev) => ({
+          ...prev,
+          images: data.images,
+        }));
+      } else {
+        Alert.alert("Erro", data.message || "Falha ao atualizar as imagens.");
+      }
+    } catch (error) {
+      Alert.alert("Erro", "Falha ao atualizar as imagens.");
     }
   };
 
@@ -159,6 +432,9 @@ const Campos = () => {
   };
 
   const openEditModal = (field) => {
+    console.log("Abrindo modal de edição com os dados do campo:");
+    console.log(field);
+
     setName(field.name);
     setLocation(field.location);
     setType(field.type);
@@ -170,6 +446,20 @@ const Campos = () => {
         uri: `${api_url}/${image.path}`.replace("api/v1/", "public/"),
       })) || []
     );
+
+    // Adicione console.log para verificar os dados
+    console.log("Editando campo:", {
+      id: field.id,
+      name: field.name,
+      location: field.location,
+      type: field.type,
+      hourly_rate: field.hourly_rate.toString(),
+      images: field.images.map((image) => ({
+        ...image,
+        uri: `${api_url}/${image.path}`.replace("api/v1/", "public/"),
+      })),
+    });
+
     setModalOpen(true);
   };
 
@@ -197,7 +487,9 @@ const Campos = () => {
     });
 
     if (!result.canceled) {
-      setImages((prevImages) => [...prevImages, result.assets[0]]);
+      const newImage = result.assets[0];
+      setImages((prevImages) => [...prevImages, newImage]);
+      handleStoreImage([newImage]);
     }
   };
 
@@ -205,66 +497,100 @@ const Campos = () => {
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.fieldItem}>
-      <Carousel
-        autoPlay
-        autoPlayInterval={3000}
-        data={item.images || []}
-        renderItem={({ item: image }) => {
-          const imageUrl = `${api_url}/${image.path}`.replace(
-            "api/v1/",
-            "public/"
-          );
-          return (
-            <Pressable
-              onPress={() => setSelectedImage(imageUrl)}
-              style={styles.imageContainer}
+  const translateStatus = (status) => {
+    if (status === "active") {
+      return "ATIVO";
+    } else if (status === "inactive") {
+      return "inativo";
+    }
+    return status;
+  };
+
+  const renderItem = ({ item }) => {
+    // Verifica se há imagens na lista
+    const hasImages = item.images && item.images.length > 0;
+
+    return (
+      <View style={styles.fieldItem}>
+        {/* Exibe o Carousel ou uma mensagem se não houver imagens */}
+        {hasImages ? (
+          // <Carousel
+          //   autoPlay
+          //   autoPlayInterval={3000}
+          //   data={item.images}
+          //   renderItem={({ item: image }) => {
+          //     const imageUrl = `${api_url}/${image.path}`.replace(
+          //       "api/v1/",
+          //       "public/"
+          //     );
+          //     return (
+          //       <Pressable
+          //         onPress={() => setSelectedImage(imageUrl)}
+          //         style={styles.imageContainer}
+          //       >
+          //         <Image
+          //           source={{ uri: imageUrl }}
+          //           style={styles.carouselImage}
+          //           onError={() => handleImageError(image.id)}
+          //         />
+          //       </Pressable>
+          //     );
+          //   }}
+          //   width={width - 40}
+          //   height={160}
+          //   style={styles.imageContainer}
+          //   loop
+          // />
+          <Text>TEste</Text>
+        ) : (
+          <Text style={styles.noImagesText}>
+            Sem imagens da arena no momento
+          </Text>
+        )}
+        <View style={styles.fieldTextContainer}>
+          <Text style={styles.fieldText}>
+            <Text style={styles.fieldLabel}>Nome:</Text> {item.name}
+          </Text>
+          <Text style={styles.fieldText}>
+            <Text style={styles.fieldLabel}>Localização:</Text> {item.location}
+          </Text>
+          <Text style={styles.fieldText}>
+            <Text style={styles.fieldLabel}>Modalidade:</Text> {item.type}
+          </Text>
+          <Text style={styles.fieldText}>
+            <Text style={styles.fieldLabel}>Valor da Hora:</Text> R${" "}
+            {item.hourly_rate}
+          </Text>
+          <Text style={styles.fieldText}>
+            <Text style={styles.fieldLabel}>Situação: </Text>
+            <Text
+              style={
+                item.status === "active"
+                  ? styles.statusActive
+                  : styles.statusInactive
+              }
             >
-              <Image
-                source={{ uri: imageUrl }}
-                style={styles.carouselImage}
-                onError={() => handleImageError(image.id)}
-              />
-            </Pressable>
-          );
-        }}
-        width={width - 40}
-        height={160}
-        style={styles.imageContainer}
-        loop
-      />
-      <View style={styles.fieldTextContainer}>
-        <Text style={styles.fieldText}>
-          <Text style={styles.fieldLabel}>Nome:</Text> {item.name}
-        </Text>
-        <Text style={styles.fieldText}>
-          <Text style={styles.fieldLabel}>Localização:</Text> {item.location}
-        </Text>
-        <Text style={styles.fieldText}>
-          <Text style={styles.fieldLabel}>Modalidade:</Text> {item.type}
-        </Text>
-        <Text style={styles.fieldText}>
-          <Text style={styles.fieldLabel}>Valor da Hora:</Text> R${" "}
-          {item.hourly_rate}
-        </Text>
+              {translateStatus(item.status)}
+            </Text>
+          </Text>
+        </View>
+        <View style={styles.iconContainer}>
+          <Pressable
+            style={styles.iconButton}
+            onPress={() => openEditModal(item)}
+          >
+            <AntDesign name="edit" size={24} color="#007BFF" />
+          </Pressable>
+          <Pressable
+            style={styles.iconButton}
+            onPress={() => deleteField(item.id)}
+          >
+            <AntDesign name="delete" size={24} color="#FF0000" />
+          </Pressable>
+        </View>
       </View>
-      <View style={styles.iconContainer}>
-        <Pressable
-          style={styles.iconButton}
-          onPress={() => openEditModal(item)}
-        >
-          <AntDesign name="edit" size={24} color="#007BFF" />
-        </Pressable>
-        <Pressable
-          style={styles.iconButton}
-          onPress={() => deleteField(item.id)}
-        >
-          <AntDesign name="delete" size={24} color="#FF0000" />
-        </Pressable>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -285,7 +611,7 @@ const Campos = () => {
       <FlatList
         style={styles.list}
         data={filteredFields}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         renderItem={renderItem}
       />
 
@@ -305,7 +631,7 @@ const Campos = () => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <TouchableOpacity
+            <Pressable
               style={styles.closeButton}
               onPress={() => {
                 setModalOpen(false);
@@ -318,7 +644,7 @@ const Campos = () => {
               }}
             >
               <AntDesign name="close" size={24} color="#007BFF" />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.modalTitle}>
               {editingField ? "Editar" : "Adicionar"} Campo
             </Text>
@@ -358,32 +684,51 @@ const Campos = () => {
                       style={styles.image}
                       resizeMode="cover"
                     />
-                    <TouchableOpacity
+                    <Pressable
                       style={styles.removeImageButton}
-                      onPress={() => removeImage(index)}
+                      // onPress={() => handleDeleteImage(image.id)}
+                      onPress={() =>
+                        editingField
+                          ? handleDeleteImage(image.id)
+                          : removeImage(image.index)
+                      }
                     >
-                      <AntDesign name="close" size={20} color="#FFF" />
-                    </TouchableOpacity>
+                      {loading ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <AntDesign name="close" size={20} color="#FFF" />
+                      )}
+                    </Pressable>
                   </View>
                 ))}
                 {images.length < 5 && (
-                  <TouchableOpacity
-                    style={styles.uploadButton}
-                    onPress={pickImage}
-                  >
+                  <Pressable style={styles.uploadButton} onPress={pickImage}>
                     <AntDesign name="camerao" size={30} color="#007BFF" />
-                  </TouchableOpacity>
+                  </Pressable>
                 )}
               </View>
 
-              <TouchableOpacity
+              <Pressable
                 style={styles.saveButton}
-                onPress={handleSaveField}
+                onPress={() => {
+                  if (editingField) {
+                    // Se estiver editando um campo, chama a função de edição
+                    handleUpdateField(editingField);
+                  } else {
+                    // Se não estiver editando, chama a função de criação
+                    handleCreateField();
+                  }
+                }}
+                disabled={loading}
               >
-                <Text style={styles.saveButtonText}>
-                  {editingField ? "Salvar Alterações" : "Adicionar Campo"}
-                </Text>
-              </TouchableOpacity>
+                {loading ? (
+                  <ActivityIndicator color={"#fff"} size={"small"} />
+                ) : (
+                  <Text style={styles.saveButtonText}>
+                    {editingField ? "Salvar Alterações" : "Adicionar Campo"}
+                  </Text>
+                )}
+              </Pressable>
             </ScrollView>
           </View>
         </View>
@@ -425,7 +770,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: 16,
+    marginVertical: 16,
+    textAlign: "center",
   },
   searchContainer: {
     flexDirection: "row",
@@ -601,6 +947,19 @@ const styles = StyleSheet.create({
     height: 160,
     borderRadius: 8,
     resizeMode: "cover",
+  },
+  statusActive: {
+    color: "green",
+    fontWeight: "bold",
+  },
+  statusInactive: {
+    color: "red",
+    fontWeight: "bold",
+  },
+  noImagesText: {
+    textAlign: "center",
+    fontWeight: "bold",
+    marginVertical: 50,
   },
 });
 
