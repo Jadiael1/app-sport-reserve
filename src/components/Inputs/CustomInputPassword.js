@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderColor: "#ccc",
 
-    paddingLeft: 10,
+    // paddingLeft: 10,
   },
   iconContainer: {
     marginLeft: 10,

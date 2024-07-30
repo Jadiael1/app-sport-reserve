@@ -6,7 +6,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Logout } from "../../../components/buttons/logout";
 import { fetchUser } from "../../../api/api";
-import imgPerfil from "../../../../assets/perfil.png";
 
 const AdminDashboard = () => {
   const [user, setUser] = useState(null);
@@ -32,10 +31,9 @@ const AdminDashboard = () => {
         <View style={styles.headerContainer}>
           <Pressable>
             <Avatar
+              size={32}
               rounded
-              size="large"
-              // source={{ uri: "https://placehold.co/150x150" }}
-              containerStyle={styles.avatar}
+              source={{ uri: "https://randomuser.me/api/portraits/men/35.jpg" }}
             />
           </Pressable>
           <View style={styles.userInfo}>
