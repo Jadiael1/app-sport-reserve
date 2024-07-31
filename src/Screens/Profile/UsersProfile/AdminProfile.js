@@ -20,16 +20,19 @@ const AdminDashboard = () => {
       id: "1",
       title: "Relatório de Usuários",
       icon: "people",
-      route: "reportUsers", // Certifique-se de que o nome da rota está correto
+      route: "reportUsers",
     },
     { id: "2", title: "Relatório de Horários", icon: "time" },
+    { id: "2", title: "Relatório de Arenas", icon: "soccer" },
     { id: "3", title: "Relatório de Pagamentos", icon: "card" },
   ];
 
   const handleReportClick = (report) => {
     console.log(`Navegando para a rota: ${report.route}`);
     if (report.route) {
-      navigation.navigate(report.route); // Navega para a tela correta
+      navigation.navigate(report.route);
+    } else {
+      console.log("Rota não encontrada");
     }
   };
 
@@ -48,7 +51,7 @@ const AdminDashboard = () => {
             {user ? (
               <Text style={styles.username}>{user.data.name}</Text>
             ) : (
-              <Text style={styles.username}>Carregando</Text>
+              <Text style={styles.username}>Carregando...</Text>
             )}
           </View>
         </View>
