@@ -23,7 +23,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Carousel from "@kaceycleveland/react-native-reanimated-carousel";
 import * as ImagePicker from "expo-image-picker";
 import { AntDesign } from "@expo/vector-icons";
-import DisableButton from "../../components/buttons/DisableButton";
+import { DisableButton } from "../../components/buttons/DisableButton";
 
 // const fallbackImage = "https://placehold.co/600x400";
 const { width } = Dimensions.get("window");
@@ -93,14 +93,15 @@ const Campos = () => {
   };
 
   const handleCreateField = async () => {
+    setLoading(true);
+    const formattedHourlyRate = (hourlyRate || "")
+      .toString()
+      .replace(/[^\d.-]/g, "");
     const formData = new FormData();
     formData.append("name", name);
     formData.append("location", location);
     formData.append("type", type);
-    formData.append(
-      "hourly_rate",
-      parseFloat(hourlyRate.replace(/[^\d.-]/g, ""))
-    );
+    formData.append("hourly_rate", parseFloat(formattedHourlyRate));
 
     if (images.length > 0) {
       images.forEach((image) => {
@@ -134,6 +135,8 @@ const Campos = () => {
     } catch (error) {
       console.error("Erro ao criar campo:", error);
       Alert.alert("Erro ao criar campo", error.message || "Erro desconhecido.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -156,11 +159,6 @@ const Campos = () => {
       status,
     };
 
-    console.log(
-      "Dados do campo antes de enviar para atualização:",
-      updatedField
-    );
-
     const formData = new FormData();
     formData.append("_method", "PATCH");
     formData.append("name", updatedField.name);
@@ -168,10 +166,6 @@ const Campos = () => {
     formData.append("type", updatedField.type);
     formData.append("hourly_rate", updatedField.hourly_rate);
     formData.append("status", updatedField.status);
-
-    for (const pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
-    }
 
     try {
       const token = await AsyncStorage.getItem("TOKEN");
@@ -583,7 +577,7 @@ const Campos = () => {
               />
 
               <View>
-                <DisableButton />
+                <DisableButton status={status} setStatus={setStatus} />
               </View>
 
               {/* Imagens dentro do modal */}
@@ -602,7 +596,7 @@ const Campos = () => {
                       onPress={() =>
                         editingField
                           ? handleDeleteImage(image.id)
-                          : removeImage(image.index)
+                          : removeImage(index)
                       }
                     >
                       {loading ? (
