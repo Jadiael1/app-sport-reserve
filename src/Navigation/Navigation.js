@@ -9,7 +9,7 @@ import ListaCampos from "../Screens/campos/Campos";
 import SignUp from "../app/signup";
 import RecoveryPassword from "../app/recoveryPassword";
 import UserProfile from "../Screens/Profile/UsersProfile/UserProfile";
-// import { Profile } from "../app/profile";
+import RelatorioUsuarios from "../Screens/Relatorios/RelatorioUsuarios";
 
 const Stack = createStackNavigator();
 
@@ -28,6 +28,7 @@ const linking = {
       validation: "validation",
       listaCampos: "listaCampos",
       userProfile: "userProfile",
+      reportUsers: "reportUsers",
     },
   },
 };
@@ -75,11 +76,11 @@ export default function AppNavigator() {
         component={UserProfile}
         options={{ headerShown: false }}
       />
-      {/* <Stack.Screen
-        name="menuProfile"
-        component={MenuProfile}
+      <Stack.Screen
+        name="reportUsers"
+        component={RelatorioUsuarios}
         options={{ headerShown: false }}
-      /> */}
+      />
     </Stack.Navigator>
   );
 }

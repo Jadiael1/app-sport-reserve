@@ -3,26 +3,34 @@ import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import { Avatar, Button } from "react-native-elements";
 import { FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import { Logout } from "../../../components/buttons/logout";
 import { fetchUser } from "../../../api/api";
+import { useNavigation } from "@react-navigation/native";
 
 const AdminDashboard = () => {
   const [user, setUser] = useState(null);
+  const navigation = useNavigation();
 
   useEffect(() => {
     fetchUser(setUser);
   }, []);
 
   const reports = [
-    { id: "1", title: "Relatório de Usuários", icon: "people" },
+    {
+      id: "1",
+      title: "Relatório de Usuários",
+      icon: "people",
+      route: "reportUsers", // Certifique-se de que o nome da rota está correto
+    },
     { id: "2", title: "Relatório de Horários", icon: "time" },
     { id: "3", title: "Relatório de Pagamentos", icon: "card" },
-    // { id: "4", title: "Relatório de Cancelamentos", icon: "close-circle" },
   ];
 
   const handleReportClick = (report) => {
-    // router.navigate(report.id);
+    console.log(`Navegando para a rota: ${report.route}`);
+    if (report.route) {
+      navigation.navigate(report.route); // Navega para a tela correta
+    }
   };
 
   return (

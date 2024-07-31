@@ -7,7 +7,6 @@ import {
   FontAwesome5,
 } from "@expo/vector-icons";
 
-import Profile from "../Screens/Profile/ProfileUser";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import HomeNoAdmin from "../Screens/Home/HomeNoAdmin";
 import AdminHome from "../Screens/Home/HomeAdmin";

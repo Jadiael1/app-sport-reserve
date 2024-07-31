@@ -1,5 +1,5 @@
 import React, { forwardRef } from "react";
-import { View } from "react-native";
+import { View, TextInput } from "react-native";
 import { TextInputMask } from "react-native-masked-text";
 
 export const ValorHora = forwardRef((props, ref) => {
@@ -9,7 +9,7 @@ export const ValorHora = forwardRef((props, ref) => {
         type={"money"}
         placeholder="Valor da hora"
         inputMode="numeric"
-        includeRawValueInChangeText
+        includeRawValueInChangeText={true}
         ref={ref}
         {...props}
       />
