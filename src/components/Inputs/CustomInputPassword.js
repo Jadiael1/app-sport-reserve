@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { View, TextInput, StyleSheet, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useForm, Controller } from "react-hook-form";
 
 export const CustomPasswordInput = ({
   value,
   onChangeText,
   placeholder,
   onBlur,
+  style,
 }) => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
 
   return (
-    <View style={styles.inputContainer}>
+    <View style={[styles.inputContainer, style]}>
       <TextInput
         style={styles.input}
         placeholder={placeholder}
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 10,
+    // marginVertical: 10,
     width: "90%",
   },
   input: {
