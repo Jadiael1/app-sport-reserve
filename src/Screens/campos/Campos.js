@@ -49,7 +49,11 @@ const Campos = () => {
 
   const fetchFields = async () => {
     try {
-      const response = await axios.get(`${api_url}/fields`);
+      const response = await axios.get(`${api_url}/fields`, {
+        params: {
+          status: "all",
+        },
+      });
       const fields = response.data.data.data;
       setFields(fields);
     } catch (error) {
@@ -410,36 +414,36 @@ const Campos = () => {
       <View style={styles.fieldItem}>
         {/* Exibe o Carousel ou uma mensagem se não houver imagens */}
         {hasImages ? (
-          <Carousel
-            autoPlay
-            autoPlayInterval={3000}
-            data={item.images}
-            renderItem={({ item: image }) => {
-              const imageUrl = `${api_url}/${image.path}`.replace(
-                "api/v1/",
-                "public/"
-              );
-              return (
-                <Pressable
-                  onPress={() => setSelectedImage(imageUrl)}
-                  style={styles.imageContainer}
-                >
-                  <Image
-                    source={{ uri: imageUrl }}
-                    key={image.id}
-                    style={styles.carouselImage}
-                    onError={() => handleImageError(image.id)}
-                  />
-                </Pressable>
-              );
-            }}
-            width={width - 40}
-            height={160}
-            style={styles.imageContainer}
-            loop
-          />
+          // <Carousel
+          //   autoPlay
+          //   autoPlayInterval={3000}
+          //   data={item.images}
+          //   renderItem={({ item: image }) => {
+          //     const imageUrl = `${api_url}/${image.path}`.replace(
+          //       "api/v1/",
+          //       "public/"
+          //     );
+          //     return (
+          //       <Pressable
+          //         onPress={() => setSelectedImage(imageUrl)}
+          //         style={styles.imageContainer}
+          //       >
+          //         <Image
+          //           source={{ uri: imageUrl }}
+          //           key={image.id}
+          //           style={styles.carouselImage}
+          //           onError={() => handleImageError(image.id)}
+          //         />
+          //       </Pressable>
+          //     );
+          //   }}
+          //   width={width - 40}
+          //   height={160}
+          //   style={styles.imageContainer}
+          //   loop
+          // />
+          <Text>TExte</Text>
         ) : (
-          // <Text>TExte</Text>
           <Text style={styles.noImagesText}>
             Sem imagens da arena no momento
           </Text>

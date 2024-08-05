@@ -9,7 +9,7 @@ import ListaCampos from "../Screens/campos/Campos";
 import SignUp from "../app/signup";
 import RecoveryPassword from "../app/recoveryPassword";
 import UserProfile from "../Screens/Profile/UsersProfile/UserProfile";
-import RelatorioUsuarios from "../Screens/Relatorios/RelatorioUsuarios";
+import RelatorioUsuarios from "../app/RelatorioUsuarios";
 
 const Stack = createStackNavigator();
 
@@ -28,7 +28,7 @@ const linking = {
       validation: "validation",
       listaCampos: "listaCampos",
       userProfile: "userProfile",
-      reportUsers: "reportUsers",
+      RelatorioUsuarios: "RelatorioUsuarios",
     },
   },
 };
@@ -77,7 +77,7 @@ export default function AppNavigator() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="reportUsers"
+        name="RelatorioUsuarios"
         component={RelatorioUsuarios}
         options={{ headerShown: false }}
       />

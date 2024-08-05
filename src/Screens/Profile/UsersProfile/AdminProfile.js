@@ -20,24 +20,36 @@ const AdminDashboard = () => {
       id: "1",
       title: "Relatório de Usuários",
       icon: "people",
-      route: "reportUsers",
+      route: "RelatorioUsuarios",
     },
-    { id: "2", title: "Relatório de Horários", icon: "time" },
-    { id: "2", title: "Relatório de Arenas", icon: "soccer" },
-    { id: "3", title: "Relatório de Pagamentos", icon: "card" },
+    {
+      id: "2",
+      title: "Relatório de Horários",
+      icon: "time",
+      route: "RelatorioHorarios",
+    },
+    {
+      id: "3",
+      title: "Relatório de Arenas",
+      icon: "football",
+      route: "RelatorioArenas",
+    },
+    {
+      id: "4",
+      title: "Relatório de Pagamentos",
+      icon: "card",
+      route: "RelatorioPagamentos",
+    },
   ];
 
   const handleReportClick = (report) => {
-    console.log(`Navegando para a rota: ${report.route}`);
     if (report.route) {
       navigation.navigate(report.route);
-    } else {
-      console.log("Rota não encontrada");
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.profileContainer}>
         <View style={styles.headerContainer}>
           <Pressable>
@@ -76,7 +88,7 @@ const AdminDashboard = () => {
         )}
       />
       <Logout />
-    </ScrollView>
+    </View>
   );
 };
 
