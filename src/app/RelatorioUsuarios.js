@@ -17,7 +17,6 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import PopUp from "../components/popupMenu/popUp";
 import CustomHeader from "../components/Headers/ReportsUser";
 
 const RelatorioUsuarios = () => {
@@ -66,7 +65,7 @@ const RelatorioUsuarios = () => {
         setFilteredUsers((prevUsers) => [...prevUsers, ...newUsers]);
 
         if (newUsers.length < response.data.data.per_page) {
-          setHasMore(false); // Desabilitar a paginação se não houver mais dados
+          setHasMore(false); 
         }
       } else {
         throw new Error("Dados dos usuários não estão no formato esperado.");
@@ -250,20 +249,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f9f9f9",
   },
-  headerContainer: {
-    // backgroundColor: "#3D6DCC",
-    // justifyContent: "space-around",
-    borderBottomWidth: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    // backgroundColor: "red",
-  },
-  headerText: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-    backgroundColor: "blue",
-  },
   container: {
     padding: 16,
   },
@@ -284,6 +269,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 16,
     elevation: 2,
+    zIndex: 1,
   },
 
   descriptionUser: {

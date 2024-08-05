@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Header as HeaderRNE } from "react-native-elements";
-import PopUp from "../popupMenu/popUp";
+import PopUp from "../PopUps/popUpMenu";
 
 const CustomHeader = () => {
   return (
@@ -11,11 +11,7 @@ const CustomHeader = () => {
           text: "Relatório de usuários",
           style: styles.headerText,
         }}
-        rightComponent={
-          <View style={styles.headerRight}>
-            <PopUp />
-          </View>
-        }
+        rightComponent={<PopUp />}
         containerStyle={styles.headerContainer}
       />
     </View>
