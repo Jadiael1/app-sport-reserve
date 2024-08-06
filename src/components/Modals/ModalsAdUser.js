@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Pressable,
@@ -7,6 +7,7 @@ import {
   View,
   TextInput,
   Alert,
+  ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
@@ -18,7 +19,7 @@ import CpfMask from "../Inputs/CpfMask";
 import { CustomPasswordInput } from "../Inputs/CustomInputPassword";
 import { CellPhoneNumber } from "../Inputs/CellPhoneMask";
 
-const ModalsAdUser = ({ visible, onClose }) => {
+const ModalsAdUser = ({ visible, onClose, userToEdit, mode }) => {
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -28,8 +29,32 @@ const ModalsAdUser = ({ visible, onClose }) => {
     password_confirmation: "",
     is_admin: false,
   });
-
+  const [loading, setLoading] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  useEffect(() => {
+    if (userToEdit) {
+      setUser({
+        name: userToEdit.name,
+        email: userToEdit.email,
+        cpf: userToEdit.cpf,
+        phone: userToEdit.phone,
+        password: "",
+        password_confirmation: "",
+        is_admin: userToEdit.is_admin ? "admin" : "user",
+      });
+    } else {
+      setUser({
+        name: "",
+        email: "",
+        cpf: "",
+        phone: "",
+        password: "",
+        password_confirmation: "",
+        is_admin: "user",
+      });
+    }
+  }, [userToEdit]);
 
   const clearCpfFormat = (cpf) => {
     return cpf.replace(/\.|-/g, "");
@@ -43,24 +68,45 @@ const ModalsAdUser = ({ visible, onClose }) => {
     setHasUnsavedChanges(true);
   };
 
-  const handleAdUser = async () => {
+  const handleSaveUser = async () => {
     try {
+      setLoading(true);
       const token = await AsyncStorage.getItem("TOKEN");
       const cleanedCpf = clearCpfFormat(user.cpf);
-      const response = await axios.post(
-        `${api_url}/users`,
-        {
-          ...user,
-          cpf: cleanedCpf,
-          is_admin: user.is_admin === "admin",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+
+      if (mode === "edit") {
+        // Editar usuário existente
+        const response = await axios.patch(
+          `${api_url}/users/${userToEdit.id}`,
+          {
+            ...user,
+            cpf: cleanedCpf,
+            is_admin: user.is_admin === "admin",
           },
-        }
-      );
-      console.log("resposta do cadastro", response.data.data);
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Resposta da edição", response.data.data);
+      } else {
+        // Adicionar novo usuário
+        const response = await axios.post(
+          `${api_url}/users`,
+          {
+            ...user,
+            cpf: cleanedCpf,
+            is_admin: user.is_admin === "admin",
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Resposta do cadastro", response.data.data);
+      }
 
       setUser({
         name: "",
@@ -73,8 +119,10 @@ const ModalsAdUser = ({ visible, onClose }) => {
       });
       onClose();
     } catch (error) {
-      console.log("erro ao registrar usuário", error);
-      Alert.alert("Erro ao registrar usuário", error.message);
+      console.log("Erro ao salvar usuário", error);
+      Alert.alert("Erro ao salvar usuário", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -100,7 +148,6 @@ const ModalsAdUser = ({ visible, onClose }) => {
           {
             text: "Sim",
             onPress: () => {
-              // Clear fields and close modal
               setUser({
                 name: "",
                 email: "",
@@ -116,7 +163,7 @@ const ModalsAdUser = ({ visible, onClose }) => {
         ]
       );
     } else {
-      onClose(); // Close the modal
+      onClose();
     }
   };
 
@@ -124,10 +171,12 @@ const ModalsAdUser = ({ visible, onClose }) => {
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
         <View style={styles.modal}>
-          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+          <Pressable onPress={handleClose} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="black" />
-          </TouchableOpacity>
-          <Text style={styles.title}>Cadastrar Usuário</Text>
+          </Pressable>
+          <Text style={styles.title}>
+            {mode === "edit" ? "Editar Usuário" : "Cadastrar Usuário"}
+          </Text>
           <TextInput
             style={styles.input}
             placeholder="Nome"
@@ -139,21 +188,21 @@ const ModalsAdUser = ({ visible, onClose }) => {
             placeholder="Email"
             value={user.email}
             onChangeText={(text) => handleChange("email", text)}
-            keyboardType="email-address"
+            inputMode="email-address"
           />
 
           <CpfMask
             value={user.cpf}
             style={styles.input}
             onChangeText={(text) => handleChange("cpf", text)}
-            keyboardType="numeric"
+            inputMode="numeric"
           />
           <CellPhoneNumber
             style={styles.input}
             placeholder="Telefone"
             value={user.phone}
             onChangeText={(text) => handleChange("phone", text)}
-            keyboardType="phone-pad"
+            inputMode="phone-pad"
           />
 
           <CustomPasswordInput
@@ -172,7 +221,7 @@ const ModalsAdUser = ({ visible, onClose }) => {
             secureTextEntry
           />
           <Picker
-            selectedValue={user.is_admin === "" ? "" : user.is_admin}
+            selectedValue={user.is_admin}
             style={styles.picker}
             onValueChange={(itemValue) => handleChange("is_admin", itemValue)}
           >
@@ -186,8 +235,14 @@ const ModalsAdUser = ({ visible, onClose }) => {
           </Picker>
 
           <View style={styles.buttonContainer}>
-            <Pressable style={styles.button} onPress={handleAdUser}>
-              <Text style={styles.buttonText}>Cadastrar</Text>
+            <Pressable style={styles.button} onPress={handleSaveUser}>
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>
+                  {mode === "edit" ? "Salvar" : "Cadastrar"}
+                </Text>
+              )}
             </Pressable>
           </View>
         </View>
@@ -247,8 +302,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: "white",
+    fontSize: 16,
   },
 });
 
