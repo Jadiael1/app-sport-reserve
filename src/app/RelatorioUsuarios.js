@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -14,10 +14,12 @@ import { format } from "date-fns";
 import { FontAwesome } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomHeader from "../components/Headers/ReportsUser";
+import ModalsAdUser from "../components/Modals/ModalsAdUser";
 
 const RelatorioUsuarios = () => {
   const [users, setUsers] = useState([]);
@@ -26,6 +28,9 @@ const RelatorioUsuarios = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [userToEdit, setUserToEdit] = useState(null);
+  const [modalMode, setModalMode] = useState("add"); // "edit" or "add"
 
   useEffect(() => {
     fetchUsers(page);
@@ -50,14 +55,12 @@ const RelatorioUsuarios = () => {
     try {
       const token = await AsyncStorage.getItem("TOKEN");
       const response = await axios.get(`${api_url}/users`, {
-        params: { page }, // Passando a página como parâmetro
+        params: { page },
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
       });
-
-      console.log("Resposta da API:", response.data);
 
       if (Array.isArray(response.data.data.data)) {
         const newUsers = response.data.data.data;
@@ -65,7 +68,7 @@ const RelatorioUsuarios = () => {
         setFilteredUsers((prevUsers) => [...prevUsers, ...newUsers]);
 
         if (newUsers.length < response.data.data.per_page) {
-          setHasMore(false); 
+          setHasMore(false);
         }
       } else {
         throw new Error("Dados dos usuários não estão no formato esperado.");
@@ -79,7 +82,9 @@ const RelatorioUsuarios = () => {
   };
 
   const handleEdit = (user) => {
-    Alert.alert("Editar Usuário", `Editar usuário ${user.name}`);
+    setUserToEdit(user);
+    setModalMode("edit");
+    setIsModalVisible(true);
   };
 
   const handleDelete = (user) => {
@@ -190,6 +195,16 @@ const RelatorioUsuarios = () => {
         </View>
       </View>
 
+      <View style={styles.descriptionUser}>
+        <MaterialIcons name="admin-panel-settings" size={24} color="black" />
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Tipo de usuário</Text>
+          <Text style={item.is_admin ? styles.styleAdmin : styles.user}>
+            {item.is_admin ? "Administrador" : "Usuário"}
+          </Text>
+        </View>
+      </View>
+
       <View style={styles.actions}>
         <Pressable
           style={[styles.actionButton, styles.editButton]}
@@ -238,69 +253,67 @@ const RelatorioUsuarios = () => {
             loading ? <ActivityIndicator size="large" color="#0000ff" /> : null
           }
         />
+
+        {/* Modal para adicionar/editar usuário */}
+        <ModalsAdUser
+          visible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+          userToEdit={userToEdit}
+          mode={modalMode}
+        />
       </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  areaView: {
-    // paddingTop: 30,
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-  },
   container: {
-    padding: 16,
+    flex: 1,
+    padding: 10,
   },
   contentSearch: {
-    flexDirection: "row",
-    alignItems: "center",
+    marginBottom: 10,
   },
   searchInput: {
-    width: "80%",
-    marginHorizontal: "auto",
-    marginVertical: 16,
-  },
-  btnAdc: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
+    backgroundColor: "#fff",
+    borderRadius: 5,
+    borderColor: "#ddd",
+    borderWidth: 1,
   },
   card: {
-    borderRadius: 8,
-    marginBottom: 16,
-    elevation: 2,
-    zIndex: 1,
+    borderRadius: 10,
+    borderWidth: 0,
+    marginBottom: 10,
   },
-
   descriptionUser: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 5,
-    borderTopWidth: 1,
+    marginBottom: 10,
   },
   infoContainer: {
-    flex: 1,
-    marginLeft: 8,
+    marginLeft: 10,
+  },
+  label: {
+    fontWeight: "bold",
   },
   userDetail: {
     fontSize: 16,
-    color: "#555",
   },
-  label: {
-    fontSize: 12,
-    color: "#888",
-    marginTop: 2,
+  statusActive: {
+    color: "green",
+  },
+  statusInactive: {
+    color: "red",
   },
   actions: {
-    marginVertical: 10,
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
+    marginTop: 10,
   },
   actionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 8,
-    borderRadius: 4,
+    padding: 10,
+    borderRadius: 5,
+    marginLeft: 5,
   },
   editButton: {
     backgroundColor: "#007bff",
@@ -308,26 +321,16 @@ const styles = StyleSheet.create({
   deleteButton: {
     backgroundColor: "#dc3545",
   },
-  statusActive: {
+  areaView: {
+    flex: 1,
+  },
+  styleAdmin: {
+    fontWeight: "bold",
     color: "green",
-    fontWeight: "bold",
   },
-  statusInactive: {
-    color: "#dc3545",
-    fontWeight: "bold",
-  },
-  headerRight: {
-    display: "flex",
-    flexDirection: "row",
-    marginTop: 5,
-  },
-  containerHeader: {
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#397af8",
-    marginBottom: 20,
-    width: "100%",
-    paddingVertical: 15,
+  user: {
+    fontWeight: "normal",
+    color: "black",
   },
 });
 
