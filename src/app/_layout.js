@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useFonts } from "expo-font";
 import AppNavigator from "../Navigation/Navigation";
+import { SessionProvider } from "../context/UserContext";
 
 const queryClient = new QueryClient();
 
@@ -44,8 +45,10 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <QueryClientProvider client={queryClient} >
-        <AppNavigator />
+      <QueryClientProvider client={queryClient}>
+        <SessionProvider>
+          <AppNavigator />
+        </SessionProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );
