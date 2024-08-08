@@ -8,86 +8,101 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { api_url } from "../../constants/constants";
 import { fetchHorarios } from "../../api/api";
 import { format, parseISO, isToday } from "date-fns";
-import { Ionicons } from "@expo/vector-icons";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { Ionicons, FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import Validation from "../../app/validation";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// Importa a função para os status
+import { useSession } from "../../context/UserContext";
 import { getStatusDetails } from "../Horarios/horariosAgendados";
 
 export default function AdminHome() {
+  const router = useRouter();
+  const { session, isLoading, error } = useSession();
   const [user, setUser] = useState(null);
   const [emailValid, setEmailValid] = useState(false);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [horarioDia, setHorarioDia] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const checkUserVerification = async () => {
-      try {
-        const storedToken = await AsyncStorage.getItem("TOKEN");
+  // Função para verificar a verificação do usuário
+  const checkUserVerification = async () => {
+    if (!session || isLoading || !session.token) {
+      router.navigate("index");
+      return;
+    }
 
-        if (!storedToken) {
-          router.navigate("index");
-          return;
-        }
-        setToken(storedToken);
-        const response = await fetch(`${api_url}/auth/user`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${storedToken}`,
-          },
-        });
-        const userData = await response.json();
+    try {
+      const response = await fetch(`${api_url}/auth/user`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+
+      const userData = await response.json();
+
+      if (userData && userData.email_verified_at !== null) {
+        setEmailValid(true);
         setUser(userData);
-
-        // Verifica se o e-mail foi verificado
-        if (userData && userData.email_verified_at !== null) {
-          setEmailValid(true);
-        } else {
-          setEmailValid(false);
-        }
-      } catch (error) {
-        console.error("Error checking user verification:", error);
-        router.navigate("index");
+      } else {
+        setEmailValid(false);
+        router.navigate("verify-email");
       }
-    };
-
-    checkUserVerification();
-  }, []);
+    } catch (error) {
+      console.error("Error checking user verification:", error);
+      router.navigate("index");
+    }
+  };
 
   useEffect(() => {
-    const loadHorarios = async () => {
-      setLoading(true);
-      try {
-        const horarios = await fetchHorarios();
-        const horariosHoje = horarios.filter((horario) =>
-          isToday(parseISO(horario.start_time))
-        );
-        setHorarioDia(horariosHoje);
-      } catch (error) {
-        console.log("erro", error);
-        Alert.alert("Erro ao recuperar os horários de hoje");
-      } finally {
-        setLoading(false);
-      }
-    };
+    checkUserVerification();
+  }, [session, isLoading]);
+
+  // Renderizar indicador de carregamento
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </SafeAreaView>
+    );
+  }
+
+  // Função para carregar horários
+  const loadHorarios = async () => {
+    setLoading(true);
+    try {
+      const horarios = await fetchHorarios();
+      const horariosHoje = horarios.filter((horario) =>
+        isToday(parseISO(horario.start_time))
+      );
+      setHorarioDia(horariosHoje);
+    } catch (error) {
+      console.log("Erro", error);
+      Alert.alert("Erro ao recuperar os horários de hoje");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadHorarios();
   }, []);
 
+  // Renderizar componente de validação ou horários
   if (!emailValid) {
-    return user ? <Validation token={token} email={user.email} /> : null;
+    return user ? (
+      <Validation token={session.token} email={user.email} />
+    ) : null;
   }
 
-  const firstName = user && user.data.name ? user.data.name.split(" ")[0] : "";
+  const firstName = user?.data?.name?.split(" ")[0] || "";
+
   const renderHorarioItem = ({ item }) => {
     const { displayName, color, icon } = getStatusDetails(item.status);
     const disabledStyle =
@@ -102,17 +117,16 @@ export default function AdminHome() {
           <Ionicons name="time" size={24} color="#007AFF" />
           {format(parseISO(item.start_time), "HH:mm")}
         </Text>
-
         <Text style={styles.horarioText}>
-          <FontAwesome name="times" size={24} color="#007AFF" />{" "}
+          <FontAwesome name="times" size={24} color="#007AFF" />
           {format(parseISO(item.end_time), "HH:mm")}
         </Text>
         <Text style={styles.horarioText}>
-          <FontAwesome name="user" size={24} color="#007AFF" />{" "}
+          <FontAwesome name="user" size={24} color="#007AFF" />
           <Text style={styles.nameUser}>{item.user.name}</Text>
         </Text>
         <View style={styles.statusContainer}>
-          <Icon name={icon} size={20} color={color} />
+          <MaterialIcons name={icon} size={20} color={color} />
           <Text style={[styles.horarioText, { color: color }]}>
             {displayName}
           </Text>
@@ -127,7 +141,7 @@ export default function AdminHome() {
         <Text style={styles.welcomeText}>Bem-vindo, {firstName}!</Text>
       </View>
       {loading ? (
-        <ActivityIndicator size={"large"} color={"#0000ff"} />
+        <ActivityIndicator size="large" color="#0000ff" />
       ) : error ? (
         <Text style={styles.errorText}>{error}</Text>
       ) : (
@@ -157,11 +171,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#E8F4F8",
-  },
-  content: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
   },
   header: {
     alignItems: "center",
@@ -201,7 +210,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginVertical: 10,
-    marginTop: 10,
   },
   errorText: {
     fontSize: 16,
@@ -219,8 +227,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   flatListContainer: {
-    paddingHorizontal: 10,
-    paddingBottom: 20,
+    paddingHorizontal: 15,
+    paddingBottom: 15,
   },
   disabledItem: {
     opacity: 0.5,

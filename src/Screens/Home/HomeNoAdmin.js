@@ -1,37 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, SafeAreaView } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSession } from "../../context/UserContext";
 import Validation from "../../app/validation";
 import { router } from "expo-router";
-import { api_url } from "../../constants/constants";
 
 export default function Home() {
-  const [user, setUser] = useState(null);
-  const [emailValid, setEmailValid] = useState(false);
-  const [token, setToken] = useState(null);
+  const { session, isAdmin, isLoading, signOut } = useSession();
+  const [emailValid, setEmailValid] = React.useState(false);
 
   useEffect(() => {
     const checkUserVerification = async () => {
+      if (isLoading) return;
+
+      if (!session?.token) {
+        router.navigate("index");
+        return;
+      }
+
       try {
-        const storedToken = await AsyncStorage.getItem("TOKEN");
-
-        if (!storedToken) {
-          router.navigate("index");
-          return;
-        }
-        setToken(storedToken);
-
         const response = await fetch(`${api_url}/auth/user`, {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${storedToken}`,
+            Authorization: `Bearer ${session.token}`,
           },
         });
 
         const userData = await response.json();
-        setUser(userData);
-
-        // Verifica se o e-mail foi verificado
         if (userData && userData.email_verified_at !== null) {
           setEmailValid(true);
         } else {
@@ -44,10 +38,16 @@ export default function Home() {
     };
 
     checkUserVerification();
-  }, []);
+  }, [session, isLoading]);
+
+  if (isLoading) {
+    return <Text>Loading...</Text>;
+  }
 
   if (!emailValid) {
-    return user ? <Validation token={token} email={user.email} /> : null;
+    return session ? (
+      <Validation token={session.token} email={session.email} />
+    ) : null;
   }
 
   return (
@@ -55,6 +55,7 @@ export default function Home() {
       <View style={styles.content}>
         <Text style={styles.welcomeText}>Bem-vindo à sua Home!</Text>
         {/* Coloque aqui os componentes e conteúdo da Home para usuário não admin */}
+        {isAdmin ? <Text>Você é um administrador</Text> : null}
       </View>
     </SafeAreaView>
   );

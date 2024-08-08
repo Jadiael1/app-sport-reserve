@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   Ionicons,
@@ -6,8 +5,6 @@ import {
   MaterialCommunityIcons,
   FontAwesome5,
 } from "@expo/vector-icons";
-
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import HomeNoAdmin from "../Screens/Home/HomeNoAdmin";
 import AdminHome from "../Screens/Home/HomeAdmin";
 import AgendarHorario from "../app/agendarHorario";
@@ -15,21 +12,13 @@ import HorariosAgendados from "../Screens/Horarios/horariosAgendados";
 import ListaCampos from "../Screens/campos/Campos";
 import UserProfile from "../Screens/Profile/UsersProfile/UserProfile";
 import AdminProfile from "../Screens/Profile/UsersProfile/AdminProfile";
+import { useSession } from "../context/UserContext";
 
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const checkAdmin = async () => {
-      const adminStatus = await AsyncStorage.getItem("IS_ADMIN");
-      setIsAdmin(JSON.parse(adminStatus));
-    };
-
-    checkAdmin();
-  }, []);
-
+  const { isAdmin } = useSession();
+  console.log("admin da home:", isAdmin);
   return (
     <Tab.Navigator
       screenOptions={{

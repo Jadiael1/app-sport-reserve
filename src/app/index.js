@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   View,
   Text,
@@ -9,25 +9,23 @@ import {
   KeyboardAvoidingView,
   ActivityIndicator,
   Platform,
-  Vibration,
   SafeAreaView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { Controller, useForm } from "react-hook-form";
-import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { api_url } from "../constants/constants";
 import { CustomPasswordInput } from "../components/Inputs/CustomInputPassword";
 import { useSession } from "../context/UserContext";
+
+
 
 export default function Login() {
   const { signIn, error } = useSession();
   const navigation = useNavigation();
   const [loginError, setLoginError] = useState("");
   const [loadingLogin, setLoadingLogin] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // const [email, setEmail] = useState("");
+  // const [password, setPassword] = useState("");
   const {
     control,
     handleSubmit,
@@ -40,55 +38,13 @@ export default function Login() {
       password: "",
     },
   });
-
   const handleLogin = async ({ email, password }) => {
-    // setLoadingLogin(true);
-
-    // if (!isValidEmail(email)) {
-    //   setError("email", {
-    //     type: "manual",
-    //     message: "Por favor, insira um e-mail válido",
-    //   });
-    //   Vibration.vibrate(400);
-    //   setLoadingLogin(false);
-    //   return;
-    // }
-
-    // if (!isValidPassword(password)) {
-    //   setError("password", {
-    //     type: "manual",
-    //     message: "Insira a senha",
-    //   });
-    //   Vibration.vibrate(400);
-    //   setLoadingLogin(false);
-    //   return;
-    // }
-
-    // try {
-    //   const response = await axios.post(`${api_url}/auth/signin`, {
-    //     email,
-    //     password,
-    //   });
-
-    //   const { token, user } = response.data.data;
-    //   console.log("resposta do login", response.data);
-    //   await AsyncStorage.setItem("TOKEN", token);
-    //   await AsyncStorage.setItem("EMAIL", user.email);
-    //   await AsyncStorage.setItem("EMAIL_VERIFIED_AT", user.email_verified_at);
-    //   await AsyncStorage.setItem("IS_ADMIN", JSON.stringify(user.is_admin));
-
-    //   navigation.navigate("home");
-    //   reset();
-    // } catch (error) {
-    //   setLoginError("Verifique suas credenciais, por favor!");
-    //   Vibration.vibrate(400);
-    // } finally {
-    //   setLoadingLogin(false);
-    // }
-
-    // Login usando useContext
-    await signIn(email, password);
-    navigation.navigate("home");
+    try {
+      await signIn(email, password);
+    } catch (error) {
+      setLoginError(error.message || "Erro desconhecido");
+      throw error;
+    }
   };
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

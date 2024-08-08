@@ -1,67 +1,72 @@
+import { useSession } from "../context/UserContext";
 import * as WebBrowser from "expo-web-browser";
 import axios from "axios";
 import { api_url } from "../constants/constants";
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Usuário
-export const fetchUser = async (setUser) => {
+export const fetchUser = async (setUser, session, signOut, router) => {
   try {
-    const storedToken = await AsyncStorage.getItem("TOKEN");
-    if (!storedToken) {
+    if (!session) {
       router.navigate("index");
       return;
     }
-    // console.log("token", storedToken);
+
     const response = await axios.get(`${api_url}/auth/user`, {
       headers: {
-        Authorization: `Bearer ${storedToken}`,
+        Authorization: `Bearer ${session}`,
       },
     });
 
     const userData = response.data;
-    // console.log("userData", userData);
-
     setUser(userData);
-    // console.log(userData);
   } catch (error) {
     console.log("error", error);
+    if (error.response && error.response.status === 401) {
+      signOut();
+    }
   }
 };
 
 // Campos
-export const fetchFields = async () => {
+export const fetchFields = async (session, signOut) => {
   try {
-    const response = await axios.get(`${api_url}/fields`);
-   
+    const response = await axios.get(`${api_url}/fields`, {
+      headers: {
+        Authorization: `Bearer ${session}`,
+      },
+    });
 
     if (response.data.status === "success") {
       return response.data.data.data;
-      
     } else {
       throw new Error("Erro ao buscar campos");
     }
   } catch (error) {
     console.error("Erro ao buscar campos:", error);
+    if (error.response && error.response.status === 401) {
+      signOut();
+    }
     throw error;
   }
 };
+
 // Horários
 export const fetchHorarios = async () => {
+  const { session, signOut } = useSession();
+
   try {
-    const token = await AsyncStorage.getItem("TOKEN");
     const response = await axios.get(`${api_url}/reservations`, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${session?.token}`,
       },
     });
-    // console.log("horarios", response.data.data.data);
+
     if (response.data.status === "success") {
       const isAdmin = await AsyncStorage.getItem("IS_ADMIN");
       const horarios = response.data.data.data.map((horario) => {
         const enhancedHorario = {
           ...horario,
-          // Adicionar userName apenas se o usuário for admin
           userName: isAdmin === "1" ? horario.user.name : null,
         };
         return enhancedHorario;
@@ -72,15 +77,21 @@ export const fetchHorarios = async () => {
       throw new Error("Erro ao buscar os agendamentos");
     }
   } catch (error) {
-    console.log("Erro ao resgatar os horários agendados", error);
+    console.error("Erro ao resgatar os horários agendados", error);
+    if (error.response && error.response.status === 401) {
+      signOut();
+    }
     throw error;
   }
 };
-
 // Nome do campo
-export const fetchFieldName = async (field_id) => {
+export const fetchFieldName = async (field_id, session, signOut) => {
   try {
-    const response = await axios.get(`${api_url}/fields/${field_id}`);
+    const response = await axios.get(`${api_url}/fields/${field_id}`, {
+      headers: {
+        Authorization: `Bearer ${session}`,
+      },
+    });
 
     if (response.data.status === "success") {
       return response.data.data.name;
@@ -89,15 +100,17 @@ export const fetchFieldName = async (field_id) => {
     }
   } catch (error) {
     console.error("Erro ao buscar o nome do campo:", error);
+    if (error.response && error.response.status === 401) {
+      signOut();
+    }
     throw error;
   }
 };
 
 // Pagamentos
-export const SwitchPagamentos = async (reserveId) => {
+export const SwitchPagamentos = async (reserveId, session, signOut) => {
   try {
-    const token = await AsyncStorage.getItem("TOKEN");
-    if (!token) {
+    if (!session) {
       throw new Error("Token não encontrado");
     }
 
@@ -106,18 +119,17 @@ export const SwitchPagamentos = async (reserveId) => {
       {},
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${session}`,
         },
       }
     );
-    console.log("pagamento", response.data);
+
     const paymentUrl = response.data.data.url;
     WebBrowser.openBrowserAsync(paymentUrl);
-
-    console.log("Resposta do pagamento:", response.data);
   } catch (error) {
     console.log("Erro ao redirecionar para pagamento:", error);
     if (error.response && error.response.status === 401) {
+      signOut();
       Alert.alert(
         "Erro de autenticação",
         "Sua sessão expirou. Faça login novamente para continuar."

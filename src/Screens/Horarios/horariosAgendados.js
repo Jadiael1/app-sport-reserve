@@ -15,6 +15,7 @@ import { format, parse } from "date-fns";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import DateTime from "../../components/Inputs/DateTime";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSession } from "../../context/UserContext";
 
 export const getStatusDetails = (status) => {
   switch (status) {
@@ -39,8 +40,10 @@ const ScheduledTimes = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [filteredTimes, setFilteredTimes] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [admin, setIsAdmin] = useState(false);
   const [loadingPayments, setLoadingPayments] = useState(false);
+
+  const { isAdmin } = useSession();
 
   useEffect(() => {
     const loadHorarios = async () => {
@@ -90,6 +93,7 @@ const ScheduledTimes = () => {
 
     checkAdminStatus();
   }, []);
+
 
   const handlePayments = async (reserveId) => {
     try {
